@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+.env.local
+.streamlit/secrets.toml
+
+# Python virtual environments & bytecode
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Local Vector Database & Large Artifacts
+chroma_db/*
+!chroma_db/.gitkeep
+
+# Sensitive and Large Data Files
+data/*.pdf
+!data/.gitkeep
+
+# macOS specific
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE / Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary evaluation outputs
+scratch/
+/tmp/
