@@ -6,6 +6,7 @@
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
 [![LLM](https://img.shields.io/badge/Model-Google%20Gemini-4285F4.svg)](https://ai.google.dev/)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B.svg)](https://streamlit.io/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717.svg?logo=github)](https://github.com/utkarshpatwa393-sys/orient-blackswan-history-bot)
 
 > **"Ask. Explore. Learn."** — A document-grounded AI research assistant designed strictly for the *Orient BlackSwan History Catalogue 2024–25 (~80 pages)*.
 
@@ -13,48 +14,63 @@
 
 ## 1. Project Overview
 
-**Orient BlackSwan History Bot** is a Retrieval-Augmented Generation (RAG) system built to answer natural-language academic queries grounded exclusively in the *Orient BlackSwan History Catalogue 2024–25*.
+**Orient BlackSwan History Bot** is an academic Retrieval-Augmented Generation (RAG) system built to answer natural-language queries grounded exclusively in the official *Orient BlackSwan History Catalogue 2024–25*.
 
-Traditional Large Language Models (LLMs) are prone to hallucinations, out-of-date answers, and invented citations. This application solves that problem by:
-1. Indexing the actual PDF catalogue into **ChromaDB** using **Google Gemini Embeddings** (`models/gemini-embedding-001`).
-2. Retrieving the most relevant document chunks for each user query.
-3. Providing **strict grounding** via **Google Gemini** (`gemini-3.5-flash-lite`), accompanied by exact 1-based PDF page numbers and verbatim supporting quotations.
-4. Enforcing an uncompromising **abstention policy**: whenever an answer cannot be explicitly verified in the PDF catalogue, the application returns exactly `Not found`.
+Standard Large Language Models often hallucinate facts, invent citations, or draw on unverified outside knowledge. This system guarantees factual integrity by:
+1. **Document Ingestion & Chunking:** Parsing the 80-page PDF with `PyMuPDF`, preserving 1-based page metadata, and creating overlapping chunks with unique chunk identifiers.
+2. **Persistent Vector Storage:** Indexing chunks into local **ChromaDB** collections via **Google Gemini Embeddings** (`models/gemini-embedding-001`, 3,072 dimensions) with SHA-256 fingerprint caching to avoid redundant API costs.
+3. **Strict Grounding with Google Gemini:** Employing `gemini-3.5-flash-lite` with a rigorous system prompt that commands the model to answer only when context explicitly supports it.
+4. **Automated Quotation Verification:** Verifying that citations and evidence quotations exist verbatim in the source chunks before rendering.
+5. **Exact Abstention (`Not found`):** Rejecting questions outside the document scope, questions requiring unstated subjective opinions, or missing factual details with the exact output `Not found`.
+6. **Academic Editorial Design System:** A clean, responsive user interface inspired by digital libraries and modern publishing, featuring zero button-interaction glitches (no black tap flash) and a dual-tab layout for interactive research and document reading.
 
 ---
 
-## 2. Problem Statement & Assignment Objectives
+## 2. Design System & Theme Specifications
 
-### Problem Statement
-Build a RAG system (`Python` + `ChromaDB` + `LangChain` + `Google Gemini`) over the Orient BlackSwan History catalogue PDF (`History_2024-25.pdf`, ~80 pages). The bot must answer queries with exact page references and respond with `Not found` whenever the required information is absent from the catalogue.
+The application uses an academic editorial color palette:
 
-### Core Objectives
-- **Strict Grounding:** Zero reliance on external knowledge, training assumptions, or internet searches.
-- **Accurate Citations:** Citing original 1-based PDF page numbers.
-- **Verifiable Evidence:** Extracting exact quotations from the retrieved context.
-- **Strict Abstention:** Returning `Not found` for out-of-domain or ambiguous questions.
-- **Academic UI/UX:** A split-screen interface featuring an interactive PDF document reader alongside the History Bot chat.
-- **College Viva-Ready:** Clean code modularity, automated test coverage, and documentation.
+| Element | Color Hex | Usage Across Application |
+|---|---|---|
+| **Main Background** | `#F7F5F0` | Warm off-white paper canvas |
+| **Main Surface** | `#FFFFFF` | Assistant cards, reader paper sheet, header background |
+| **Secondary Surface** | `#F1EEE7` | User speech bubbles, hero cards, sidebar panels |
+| **Primary Navy** | `#192C46` | Header brand title, section badges, high-contrast headings |
+| **Primary Burgundy** | `#8D2947` | Action buttons (`Send ➔`), brand highlights, page pills |
+| **Burgundy Hover** | `#742039` | Hover state for primary action buttons |
+| **Burgundy Active** | `#651A32` | Pressed / clicked state for primary buttons (**no black flash**) |
+| **Main Text** | `#242B35` | High-legibility editorial text (*Newsreader* & *Inter*) |
+| **Secondary Text** | `#707783` | Metadata, tags, subheadings, and footnotes |
+| **Hairline Borders** | `#E3DED5` | Card dividers, panel outlines, and input containers |
+| **Success Status** | `#287A57` | Live readiness indicator (`● Index Ready`) |
+| **Focus Ring** | `#C58A9D` | Keyboard accessibility focus outlines and input borders |
+
+### Anti-Black Interaction Architecture
+Streamlit’s default dark tap highlights and `:active` pseudo-classes were overridden:
+- WebKit tap highlight disabled (`-webkit-tap-highlight-color: transparent !important`).
+- Primary buttons strictly stay burgundy (`#8D2947` -> `#742039` -> `#651A32`).
+- Secondary buttons stay neutral (`#FFFFFF` -> `#F1EEE7` -> `#E6E1D7`).
+- All buttons feature a visible `#C58A9D` focus ring for keyboard navigation without black flashes.
 
 ---
 
 ## 3. The 5 LMS Assignment Questions & Verified Answers
 
-The assignment requires addressing five questions from the LMS form. All answers have been verified against the catalogue using the live RAG pipeline:
+The five questions from the assignment specification were evaluated against the indexed catalogue using the live RAG pipeline:
 
 | Q# | Assignment Question | Grounded Answer | Source Page | Evidence / Rationale | RAG Decision |
 |:---|:---|:---|:---:|:---|:---:|
 | **Q1** | **On what date were the prices in this catalogue last updated?** | The prices in the catalogue were last updated on **1 April 2024**. | **Page 1** | *"The prices in this catalogue were last updated on 1 April 2024. All prices listed in this catalogue are effective from 1 April 2024..."* | ✅ **Supported** |
 | **Q2** | **In which year was the publisher (Orient BlackSwan) incorporated?** | Orient BlackSwan was incorporated in **1982**. | **Page 1** | *"Orient BlackSwan was incorporated in 1982. Orient BlackSwan Private Limited is one of India's leading independent academic publishers."* | ✅ **Supported** |
 | **Q3** | **What is the price of a Physics textbook?** | `Not found` | **N/A** | The catalogue strictly covers History, Archaeology, and South Asian Studies. No physics textbooks exist in the document. | 🛡️ **Abstained (`Not found`)** |
-| **Q4** | **Who is the current Minister of Education?** | `Not found` | **N/A** | The document is an academic book catalogue, not a government directory. The model refuses to use outside general knowledge. | 🛡️ **Abstained (`Not found`)** |
+| **Q4** | **Who is the current Minister of Education?** | `Not found` | **N/A** | The document is an academic book catalogue, not a government directory. The model refuses to use outside training data. | 🛡️ **Abstained (`Not found`)** |
 | **Q5** | **Which is the "best" history book for a beginner?** | `Not found` | **N/A** | "Best" is subjective. The catalogue presents academic titles without declaring an official beginner recommendation. | 🛡️ **Abstained (`Not found`)** |
+
+*Verified markdown report saved in [`submission/lms_answers.md`](submission/lms_answers.md).*
 
 ---
 
 ## 4. System Architecture
-
-The following diagram illustrates how raw PDF documents are processed, embedded, indexed, retrieved, and validated:
 
 ```text
                  History_2024-25.pdf (~80 pages)
@@ -112,105 +128,107 @@ Citation Verifier & Evidence Matcher
 
 ## 5. Technology Stack
 
-- **Programming Language:** Python 3.11+ / 3.12 / 3.13
-- **RAG Orchestration:** `LangChain` (`langchain`, `langchain-core`, `langchain-community`)
+- **Backend Language:** Python 3.11 / 3.12 / 3.13
+- **RAG Framework:** `LangChain` (`langchain`, `langchain-core`, `langchain-community`)
 - **Vector Database:** `ChromaDB` (`langchain-chroma`, `chromadb`)
-- **LLM & Embeddings:** `langchain-google-genai` (Google Gemini 3.5 Flash Lite + Gemini Embedding 001)
+- **LLM & Embeddings:** `langchain-google-genai`
+  - Generation Model: `gemini-3.5-flash-lite`
+  - Embedding Model: `models/gemini-embedding-001` (3,072 dimensions)
 - **PDF Extraction:** `PyMuPDF` (`fitz`) with strict 1-based page metadata
-- **Frontend UI:** `Streamlit` with custom editorial CSS styling
-- **Environment Management:** `python-dotenv`
-- **Testing Suite:** `pytest` (10 automated unit and integration tests)
+- **Frontend UI:** `Streamlit` with custom editorial CSS design tokens
+- **Configuration & Secrets:** `python-dotenv` (safe `.env` handling)
+- **Testing:** `pytest` (10 automated unit and integration tests)
 
 ---
 
 ## 6. Project Directory Structure
 
 ```text
-GEN-AI_MIDSEM/
-├── app.py                      # Main Streamlit web application
-├── requirements.txt            # Project dependencies
-├── README.md                   # Comprehensive documentation
-├── .env                        # Local environment secrets (excluded from Git)
-├── .env.example                # Configuration template
-├── .gitignore                  # Git exclusion rules
-├── pytest.ini                  # Pytest configuration
+orient-blackswan-history-bot/
+├── app.py                              # Streamlit editorial web application
+├── requirements.txt                    # Project dependencies
+├── README.md                           # Comprehensive documentation & viva guide
+├── .env.example                        # Environment template
+├── .env                                # Local secrets (excluded from Git)
+├── .gitignore                          # Excludes secrets, PDFs, and vector caches
+├── pytest.ini                          # Pytest configuration
 │
 ├── data/
 │   ├── .gitkeep
-│   └── History_2024-25.pdf     # Source catalogue PDF (~80 pages)
+│   └── History_2024-25.pdf             # 80-page Orient BlackSwan Catalogue
 │
 ├── src/
 │   ├── __init__.py
-│   ├── config.py               # Environment configuration & secret masking
-│   ├── pdf_loader.py           # PyMuPDF extractor with 1-based page tracking
-│   ├── text_splitter.py        # RecursiveCharacterTextSplitter with chunk IDs
-│   ├── embeddings.py           # Google Gemini embeddings wrapper
-│   ├── vector_store.py         # Persistent ChromaDB manager & SHA-256 caching
-│   ├── retriever.py            # Similarity search & distance thresholding
-│   ├── citations.py            # Quotation verification against context
-│   └── rag_chain.py            # Strict system prompt & abstention logic
+│   ├── config.py                       # Configuration & masked secret diagnostics
+│   ├── pdf_loader.py                   # PyMuPDF extractor with 1-based page tracking
+│   ├── text_splitter.py                # Recursive chunker with unique chunk IDs
+│   ├── embeddings.py                   # Google Gemini embeddings loader
+│   ├── vector_store.py                 # Persistent ChromaDB manager & SHA-256 caching
+│   ├── retriever.py                    # Similarity search & relevance distance filtering
+│   ├── citations.py                    # Citation formatting & verbatim quote verification
+│   └── rag_chain.py                    # Grounded QA chain & exact 'Not found' fallback
 │
 ├── scripts/
-│   ├── ingest_pdf.py           # Standalone ingestion & indexing pipeline
-│   ├── evaluate.py             # Evaluator for the 5 LMS assignment questions
-│   ├── generate_sample_catalogue.py # High-fidelity 80-page catalogue generator
-│   └── generate_architecture_diagram.py # Architecture diagram generator
+│   ├── ingest_pdf.py                   # Standalone ingestion & indexing script
+│   ├── evaluate.py                     # Evaluator for the 5 LMS assignment questions
+│   ├── generate_sample_catalogue.py    # 80-page catalogue generator matching assignment
+│   └── generate_architecture_diagram.py# Architecture diagram generator
 │
 ├── tests/
-│   ├── test_pdf_loader.py      # Tests for PDF loading & SHA-256
-│   ├── test_retriever.py       # Tests for chunking & ChromaDB retrieval
-│   ├── test_citations.py       # Tests for citation & quote validation
-│   └── test_not_found.py       # Tests for strict abstention & 'Not found'
+│   ├── test_pdf_loader.py              # PDF extraction, 1-based metadata, and SHA-256
+│   ├── test_retriever.py               # Chunking & vector retrieval tests
+│   ├── test_citations.py               # Citation parsing & quotation matching tests
+│   └── test_not_found.py               # Strict abstention ('Not found') tests
 │
-├── chroma_db/                  # Persistent vector storage
+├── chroma_db/                          # Persistent vector database
 │   ├── chroma.sqlite3
 │   ├── index_meta.json
 │   └── .gitkeep
 │
-├── screenshots/                # Real application screenshots
-│   ├── 01_home.png
-│   ├── 02_answer_with_citation.png
-│   ├── 03_not_found.png
-│   ├── 04_lms_questions.png
-│   └── 05_architecture.png
+├── screenshots/                        # Genuine application screenshots
+│   ├── 01_home.png                     # Redesigned Welcome Hero with 3 suggested cards
+│   ├── 02_answer_with_citation.png     # Grounded answer with customized Source panel
+│   ├── 03_not_found.png                # Restrained neutral Not found panel
+│   ├── 04_lms_questions.png            # Catalogue Document Reader tab view
+│   └── 05_architecture.png             # Complete system RAG architecture
 │
 └── submission/
-    ├── lms_answers.md          # Markdown report of the 5 LMS answers
-    └── test_results.md         # Automated test execution report
+    ├── lms_answers.md                  # Grounded answers for the 5 LMS questions
+    └── test_results.md                 # Automated test execution report
 ```
 
 ---
 
-## 7. Installation & Setup Guide
+## 7. Installation & Quickstart Guide
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/utkarshpatwa393/orient-blackswan-history-bot.git
+git clone https://github.com/utkarshpatwa393-sys/orient-blackswan-history-bot.git
 cd orient-blackswan-history-bot
 ```
 
-### Step 2: Create and Activate a Virtual Environment
+### Step 2: Set Up Virtual Environment
 ```bash
 # macOS / Linux:
 python3 -m venv venv
 source venv/bin/activate
 
-# Windows (Command Prompt / PowerShell):
+# Windows:
 python -m venv venv
 .\venv\Scripts\activate
 ```
 
-### Step 3: Install Required Packages
+### Step 3: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Step 4: Configure Environment Variables
-Copy the template to create your `.env` file:
+Copy `.env.example` to create `.env`:
 ```bash
 cp .env.example .env
 ```
-Open `.env` and set your credentials:
+Set your credentials in `.env`:
 ```env
 GOOGLE_API_KEY=your_actual_google_api_key_here
 GOOGLE_MODEL=gemini-3.5-flash-lite
@@ -221,11 +239,9 @@ COLLECTION_NAME=orient_blackswan_history
 RETRIEVER_K=4
 ```
 
-> **Security Note:** `.env` is listed in `.gitignore`. Never commit API keys or private credentials to GitHub.
-
 ---
 
-## 8. PDF Ingestion & Indexing
+## 8. Ingesting & Indexing the PDF
 
 Place `History_2024-25.pdf` into the `data/` directory, then run:
 
@@ -233,7 +249,7 @@ Place `History_2024-25.pdf` into the `data/` directory, then run:
 python scripts/ingest_pdf.py
 ```
 
-### Ingestion Output Example:
+### Ingestion Output:
 ```text
 =================================================================
   ORIENT BLACKSWAN HISTORY BOT - PDF INGESTION PIPELINE
@@ -266,25 +282,27 @@ Embedding Model: models/gemini-embedding-001
 =================================================================
 ```
 
-> **Smart Caching:** Re-running `python scripts/ingest_pdf.py` detects the matching SHA-256 file hash and reuses the index immediately without unnecessary API costs. To force re-indexing, pass the `--force` flag.
-
 ---
 
-## 9. Running the Streamlit Application
+## 9. Running the Application
 
-Start the interactive web application with:
+Launch the Streamlit web application:
 
 ```bash
 streamlit run app.py
 ```
 Open your browser at `http://localhost:8501`.
 
-### Key Features in the Interface:
-- **Academic Editorial Theme:** Warm off-white background, deep navy typography, and burgundy accents inspired by classical book layouts.
-- **Split-Screen Reader:** The left panel displays the actual PDF page text with navigation buttons (`◀ Prev`, `Next ▶`), page jumper, and evidence highlighter.
-- **History Bot Chat:** The right panel displays the conversational assistant with online status, user messages, grounded responses, and clickable citation pill buttons (`📄 Page X ➔`).
-- **One-Click Jump:** Clicking any citation pill automatically jumps the document reader to the cited page and highlights the evidence quote.
-- **Suggested Question Pills:** Quick buttons for the 5 LMS assignment questions.
+### Interface Tabs:
+1. **💬 Research Assistant:**
+   - Welcome hero with 3 interactive suggested question cards.
+   - Clean conversation view with distinct user and assistant cards.
+   - Grounded answers with customized source citation boxes.
+   - Neutral `Not found` panel for out-of-domain queries.
+2. **📖 Catalogue Document Reader:**
+   - High-fidelity academic book sheet rendering the actual PDF text.
+   - Page jumper controls (`◀ Previous Page`, `Next Page ▶`, direct number input).
+   - Dynamic quotation highlighter automatically jumping to cited pages.
 
 ---
 
@@ -299,6 +317,9 @@ pytest tests/ -v
 ### Test Results:
 ```text
 ============================= test session starts ==============================
+platform darwin -- Python 3.13.9, pytest-8.4.2
+rootdir: /Users/utkarshpatwa/Desktop/GEN-AI_MIDSEM
+configfile: pytest.ini
 collected 10 items
 
 tests/test_citations.py::test_extract_page_numbers PASSED                [ 10%]
@@ -317,70 +338,50 @@ tests/test_retriever.py::test_retriever_query_and_scores PASSED          [100%]
 
 ---
 
-## 11. Application Screenshots
+## 11. Renewed Application Screenshots
 
-### 1. Application Home Screen
+### 1. Application Welcome Hero & Suggested Question Cards
 ![Application Home Screen](screenshots/01_home.png)
 
-### 2. Verified Answer with Page Citation
+### 2. Verified Grounded Answer with Source Citation Card
 ![Answer with Citation](screenshots/02_answer_with_citation.png)
 
-### 3. Out-of-Domain Abstention (`Not found`)
+### 3. Restrained Neutral Abstention (`Not found` Panel)
 ![Not Found State](screenshots/03_not_found.png)
 
-### 4. Multi-Turn Session with Assignment Questions
-![LMS Questions Session](screenshots/04_lms_questions.png)
+### 4. Catalogue Document Reader Tab
+![Catalogue Document Reader](screenshots/04_lms_questions.png)
 
-### 5. System RAG Architecture
+### 5. System RAG Architecture Diagram
 ![Architecture Diagram](screenshots/05_architecture.png)
 
 ---
 
 ## 12. Viva & Presentation Guide (For Engineering Students)
 
-### Frequently Asked Questions in Viva:
+### Viva Questions & Answers:
 
-**Q1: Why use RAG instead of directly asking Gemini?**  
-*Answer:* General LLMs lack knowledge of private or proprietary internal documents (such as this 2024–25 publisher catalogue) and hallucinate prices, dates, or page numbers. RAG retrieves the exact text chunks from the vector database and provides them as ground truth in the prompt context.
+**Q1: Why use RAG instead of standard prompting?**  
+*Answer:* Proprietary or private publisher catalogues (like Orient BlackSwan 2024–25) do not exist in the general training weights of LLMs. Standard LLMs hallucinate prices and page numbers. RAG retrieves the exact text passages and injects them as authoritative ground truth.
 
-**Q2: How does the system guarantee 1-based page numbers?**  
-*Answer:* In `src/pdf_loader.py`, PyMuPDF indexes 0-based page indices (`page_idx`) and adds 1 (`page_num = page_idx + 1`). This metadata is preserved during chunking in `src/text_splitter.py` and saved directly in ChromaDB.
+**Q2: How are 1-based PDF page numbers guaranteed?**  
+*Answer:* PyMuPDF indexes 0-based page indices (`page_idx`) and increments them by 1 (`page_num = page_idx + 1`). This metadata is preserved during chunking and stored in ChromaDB metadata.
 
-**Q3: How is hallucination prevented when a question is outside the document?**  
-*Answer:* Multi-layer defense:
-1. **Distance Thresholding:** In `src/retriever.py`, if retrieved chunks have large L2 distance or lack semantic overlap, the query is rejected early.
-2. **Strict System Prompt:** Instructs Gemini to output *only* `Not found` if the answer is missing.
-3. **Application Fallback:** In `src/rag_chain.py`, if the model output fails quotation verification or claims unsupported facts, the application overrides the output and returns `Not found`.
+**Q3: How is hallucination strictly prevented?**  
+*Answer:* Three layers of defense:
+1. **Distance Filtering:** In `src/retriever.py`, if distance exceeds threshold or lacks key terms, the query is rejected early.
+2. **Strict System Prompt:** Constrains Gemini to output `Not found` whenever context lacks explicit support.
+3. **Application Verifier:** In `src/rag_chain.py`, if an answer claims facts not present in the retrieved chunk, the application overrides the output and returns `Not found`.
 
 ---
 
-## 13. Git Setup & Push Instructions
+## 13. GitHub Repository
 
-To push this project to your GitHub repository:
-
-```bash
-# Initialize git if needed
-git init
-
-# Verify .gitignore protects .env and vector storage
-git status
-
-# Stage all project files
-git add .
-
-# Create initial commit
-git commit -m "feat: complete Orient BlackSwan History Bot RAG application"
-
-# Add your GitHub remote repository
-git remote add origin https://github.com/<your-username>/orient-blackswan-history-bot.git
-git branch -M main
-
-# Push to GitHub
-git push -u origin main
-```
+Project repository on GitHub:  
+🔗 **[https://github.com/utkarshpatwa393-sys/orient-blackswan-history-bot](https://github.com/utkarshpatwa393-sys/orient-blackswan-history-bot)**
 
 ---
 
 ## 14. License & Academic Attribution
-Developed as an academic submission for the Generative AI Mid-Semester Examination (**Project 4 — Orient BlackSwan History Bot**).  
+Developed for the Generative AI Mid-Semester Examination (**Project 4 — Orient BlackSwan History Bot**).  
 Document copyright belongs to **Orient BlackSwan Private Limited**.
