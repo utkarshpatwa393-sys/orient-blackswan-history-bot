@@ -28,29 +28,31 @@ Standard Large Language Models often hallucinate facts, invent citations, or dra
 
 ## 2. Design System & Theme Specifications
 
-The application uses an academic editorial color palette:
+The application uses an academic editorial color palette specifically crafted to provide a light, warm, distraction-free environment inspired by university libraries and digital archives:
 
 | Element | Color Hex | Usage Across Application |
 |---|---|---|
-| **Main Background** | `#F7F5F0` | Warm off-white paper canvas |
-| **Main Surface** | `#FFFFFF` | Assistant cards, reader paper sheet, header background |
+| **Main Background** | `#F7F5F0` | Warm ivory paper canvas across entire page body |
+| **Main Surface** | `#FFFFFF` | Assistant cards, reader paper sheet, header banner |
 | **Secondary Surface** | `#F1EEE7` | User speech bubbles, hero cards, sidebar panels |
 | **Primary Navy** | `#192C46` | Header brand title, section badges, high-contrast headings |
-| **Primary Burgundy** | `#8D2947` | Action buttons (`Send ➔`), brand highlights, page pills |
+| **Primary Burgundy** | `#8D2947` | Action buttons (`Send ➔`, active tabs), brand highlights, page pills |
 | **Burgundy Hover** | `#742039` | Hover state for primary action buttons |
-| **Burgundy Active** | `#651A32` | Pressed / clicked state for primary buttons (**no black flash**) |
-| **Main Text** | `#242B35` | High-legibility editorial text (*Newsreader* & *Inter*) |
-| **Secondary Text** | `#707783` | Metadata, tags, subheadings, and footnotes |
-| **Hairline Borders** | `#E3DED5` | Card dividers, panel outlines, and input containers |
-| **Success Status** | `#287A57` | Live readiness indicator (`● Index Ready`) |
+| **Burgundy Active** | `#651A32` | Pressed / clicked state for primary buttons (**never black**) |
+| **Main Text** | `#242B35` | High-legibility editorial text (*Newsreader* serif & *Inter* sans) |
+| **Secondary Text** | `#6B7280` | Metadata, tags, subheadings, and footnotes |
+| **Hairline Borders** | `#E2DDD4` | Card dividers, panel outlines, and input containers |
+| **Success Status** | `#1E7E51` | Live readiness indicator (`● Index Ready`) |
 | **Focus Ring** | `#C58A9D` | Keyboard accessibility focus outlines and input borders |
 
-### Anti-Black Interaction Architecture
-Streamlit’s default dark tap highlights and `:active` pseudo-classes were overridden:
-- WebKit tap highlight disabled (`-webkit-tap-highlight-color: transparent !important`).
-- Primary buttons strictly stay burgundy (`#8D2947` -> `#742039` -> `#651A32`).
-- Secondary buttons stay neutral (`#FFFFFF` -> `#F1EEE7` -> `#E6E1D7`).
-- All buttons feature a visible `#C58A9D` focus ring for keyboard navigation without black flashes.
+### Anti-Black Interaction & Clean UI Architecture
+Streamlit’s default dark tap highlights, dark header bars, and black `:active` button pseudo-classes were completely eliminated:
+- **Top Header Bar Override:** Targeted `[data-testid="stHeader"]`, `[data-testid="stToolbar"]`, and `[data-testid="stDecoration"]` with `#FFFFFF` surface background and a crisp `#E2DDD4` hairline border, preventing any dark floating bar at the top of the viewport.
+- **Zero Black Button Flash:** Disabled mobile WebKit tap highlight (`-webkit-tap-highlight-color: transparent !important`) and enforced solid color transitions across all interaction phases (`:hover`, `:active`, `:focus`, `:focus-visible`).
+- **Primary Buttons:** Remain strictly in the burgundy spectrum (`#8D2947` normal -> `#742039` hover -> `#651A32` active).
+- **Secondary Buttons & Hero Cards:** Transition seamlessly between light ivory tones (`#FFFFFF` -> `#F1EEE7` -> `#E6E1D7`), maintaining dark navy text (`#192C46`) for constant readability.
+- **Dual High-Contrast Tabs:** Active tab renders with a prominent burgundy pill (`#8D2947`) and white text; inactive tab renders with soft ivory (`#EBE7DF`) and deep navy text (`#192C46`), ensuring high WCAG contrast compliance.
+- **Single-CTA Query Cards:** Each suggested question card features a unified card layout and exactly one clean action button (`Ask this ➔`) without repetitive duplicate buttons.
 
 ---
 
@@ -338,21 +340,28 @@ tests/test_retriever.py::test_retriever_query_and_scores PASSED          [100%]
 
 ---
 
-## 11. Renewed Application Screenshots
+## 11. Renewed Application Screenshots (Light Ivory UI/UX)
+
+The screenshots below reflect the live application running with the light ivory academic editorial theme, zero-black button states, and clean typography:
 
 ### 1. Application Welcome Hero & Suggested Question Cards
+*Presents the warm ivory canvas (`#F7F5F0`), pure white surface cards, responsive sidebar status panel, and 3 cleanly-spaced suggested research question cards with unified single `Ask this ➔` call-to-action buttons.*
 ![Application Home Screen](screenshots/01_home.png)
 
 ### 2. Verified Grounded Answer with Source Citation Card
+*Displays the chat interaction: user speech bubble on the right, grounded answer card on the left with a dedicated **SOURCE** badge, PDF document title, `PDF Page 1` pill, verbatim quotation, and collapsible supporting extract accordion.*
 ![Answer with Citation](screenshots/02_answer_with_citation.png)
 
 ### 3. Restrained Neutral Abstention (`Not found` Panel)
+*Demonstrates strict document-grounding behavior: when an out-of-domain query (e.g., asking for a Physics textbook price in a History catalogue) is received, the bot abstains with a clean neutral `Not found in document` card without hallucinating.*
 ![Not Found State](screenshots/03_not_found.png)
 
 ### 4. Catalogue Document Reader Tab
+*Shows the dual-tab reader interface rendering the high-fidelity academic book sheet from the PDF, featuring previous/next pagination buttons, direct page jump input, and the highlighted `[Cited Source]` passage in a burgundy tint.*
 ![Catalogue Document Reader](screenshots/04_lms_questions.png)
 
 ### 5. System RAG Architecture Diagram
+*Visual schematic of the 80-page catalogue ingestion, PyMuPDF 1-based page metadata tracking, Gemini embeddings generation, ChromaDB vector indexing, semantic retrieval, and dual-layer verification pipeline.*
 ![Architecture Diagram](screenshots/05_architecture.png)
 
 ---
