@@ -74,6 +74,35 @@ html, body,
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
+/* ── KILL THE BLACK HEADER BAR at the top ── */
+[data-testid="stHeader"],
+[data-testid="stHeader"] > div,
+header[data-testid="stHeader"] {
+  background: var(--surface) !important;
+  background-color: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+/* Deploy button area */
+[data-testid="stToolbar"],
+[data-testid="stToolbar"] > div,
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+[data-testid="stDeployButton"] {
+  background: var(--surface) !important;
+  background-color: var(--surface) !important;
+  color: var(--txt2) !important;
+}
+
+/* Top-right action buttons (Deploy, overflow menu) */
+[data-testid="stToolbarActions"],
+[data-testid="stToolbarActions"] button,
+[data-testid="stToolbarActions"] svg {
+  color: var(--txt2) !important;
+  fill: var(--txt2) !important;
+}
+
 .main .block-container {
   max-width: 1200px !important;
   padding: 1rem 2rem 4rem !important;
