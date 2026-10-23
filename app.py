@@ -1,10 +1,12 @@
 """
 Orient BlackSwan History Bot - Streamlit Application
 A document-grounded RAG research assistant built with LangChain, ChromaDB, and Google Gemini.
+Features an academic editorial UI matching the reference design.
 """
 
 import sys
 import os
+import re
 from pathlib import Path
 
 # Add project root to sys.path
@@ -22,7 +24,7 @@ from src.citations import CitationManager
 
 
 # -----------------------------------------------------------------------------
-# Streamlit Page Setup & Custom Editorial CSS
+# Streamlit Page Setup & Custom Editorial Academic CSS
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Orient BlackSwan History Bot",
@@ -34,38 +36,46 @@ st.set_page_config(
 CUSTOM_CSS = """
 <style>
 /* Font Imports */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
 
-/* Academic Warm Off-White Theme */
+/* Academic Warm Off-White Color System */
 :root {
-    --bg-page: #fbf9f5;
+    --bg-page: #fbf9f4;
     --bg-card: #ffffff;
+    --bg-paper: #fefdfa;
     --text-navy: #141e30;
-    --text-muted: #5a6578;
+    --text-muted: #64748b;
     --burgundy: #881337;
+    --burgundy-hover: #9f1239;
+    --burgundy-active: #701a2e;
     --burgundy-light: #fbebf0;
     --burgundy-border: #e2a8b9;
     --border-card: #e5e0d4;
-    --accent-gold: #c59b27;
+    --border-paper: #dcd6c8;
+}
+
+/* Global Reset */
+* {
+    -webkit-tap-highlight-color: transparent !important;
 }
 
 body, .stApp {
-    background-color: var(--bg-page);
-    color: var(--text-navy);
-    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-page) !important;
+    color: var(--text-navy) !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
 }
 
-/* Header Styles */
+/* Header Banner */
 .header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 1.8rem;
+    padding: 1.1rem 1.8rem;
     background: #ffffff;
     border: 1px solid var(--border-card);
-    border-radius: 12px;
-    margin-bottom: 1.2rem;
-    box-shadow: 0 2px 10px rgba(20, 30, 48, 0.03);
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 12px rgba(20, 30, 48, 0.03);
 }
 
 .brand-wrapper {
@@ -89,7 +99,7 @@ body, .stApp {
 
 .brand-title {
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 1.8rem;
+    font-size: 1.85rem;
     font-weight: 700;
     color: var(--text-navy);
     margin: 0;
@@ -105,7 +115,7 @@ body, .stApp {
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.8px;
+    letter-spacing: 2px;
     color: var(--text-muted);
     margin-top: 4px;
 }
@@ -114,12 +124,12 @@ body, .stApp {
     text-align: right;
     font-family: 'Merriweather', Georgia, serif;
     font-style: italic;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: var(--text-navy);
 }
 
 .header-tagline-bar {
-    width: 60px;
+    width: 65px;
     height: 3px;
     background: var(--burgundy);
     margin-left: auto;
@@ -127,16 +137,16 @@ body, .stApp {
     border-radius: 2px;
 }
 
-/* Diagram Bar */
+/* Workflow Diagram */
 .diagram-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1.5rem;
-    padding: 0.8rem 1rem;
+    gap: 1.8rem;
+    padding: 0.75rem 1rem;
     background: #ffffff;
     border: 1px dashed var(--border-card);
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 1.2rem;
     font-size: 0.85rem;
     color: var(--text-muted);
@@ -156,34 +166,127 @@ body, .stApp {
     justify-content: center;
     width: 32px;
     height: 32px;
-    background: #f4efe6;
+    background: #f5f0e6;
     color: var(--burgundy);
     border-radius: 8px;
     font-size: 16px;
 }
 
-/* Document Viewer (Left Pane) */
+/* ========================================================================= */
+/* BUTTONS: ELIMINATE BLACK TAP / FLASH ON FOCUS AND ACTIVE STATES          */
+/* ========================================================================= */
+.stButton > button {
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.2px !important;
+    transition: all 0.18s ease-in-out !important;
+    border: 1px solid var(--border-card) !important;
+    background-color: #ffffff !important;
+    color: var(--text-navy) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+    outline: none !important;
+}
+
+/* Hover: soft pink/burgundy tint */
+.stButton > button:hover {
+    background-color: var(--burgundy-light) !important;
+    border-color: var(--burgundy-border) !important;
+    color: var(--burgundy) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(136, 19, 55, 0.08) !important;
+}
+
+/* ACTIVE / CLICKED / TAPPED / FOCUSED: NEVER TURNS BLACK! */
+.stButton > button:active,
+.stButton > button:focus,
+.stButton > button:focus-visible,
+.stButton > button:focus:not(:focus-visible) {
+    background-color: #fae1e7 !important;
+    border-color: var(--burgundy) !important;
+    color: var(--burgundy) !important;
+    box-shadow: 0 0 0 2px rgba(136, 19, 55, 0.2) !important;
+    outline: none !important;
+    transform: translateY(0px) !important;
+}
+
+/* Primary Form Submit Button (Send) */
+div[data-testid="stFormSubmitButton"] > button {
+    background: var(--burgundy) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--burgundy) !important;
+    border-radius: 22px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(136, 19, 55, 0.25) !important;
+}
+
+div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--burgundy-hover) !important;
+    color: #ffffff !important;
+    border-color: var(--burgundy-hover) !important;
+    box-shadow: 0 4px 12px rgba(136, 19, 55, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+div[data-testid="stFormSubmitButton"] > button:active,
+div[data-testid="stFormSubmitButton"] > button:focus,
+div[data-testid="stFormSubmitButton"] > button:focus-visible {
+    background: var(--burgundy-active) !important;
+    color: #ffffff !important;
+    border-color: var(--burgundy-active) !important;
+    box-shadow: 0 0 0 2px rgba(136, 19, 55, 0.3) !important;
+    outline: none !important;
+}
+
+/* Input text fields styling */
+div[data-baseweb="input"] {
+    background-color: #ffffff !important;
+    border-radius: 24px !important;
+    border: 1px solid var(--border-paper) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
+}
+
+div[data-baseweb="input"]:focus-within {
+    border-color: var(--burgundy) !important;
+    box-shadow: 0 0 0 2px rgba(136, 19, 55, 0.15) !important;
+}
+
+div[data-baseweb="input"] input {
+    color: var(--text-navy) !important;
+    font-size: 0.92rem !important;
+    padding-left: 14px !important;
+}
+
+/* Number input for page jumping */
+div[data-testid="stNumberInput"] div[data-baseweb="input"] {
+    border-radius: 12px !important;
+}
+
+/* ========================================================================= */
+/* LEFT COLUMN: DOCUMENT VIEWER CARD                                        */
+/* ========================================================================= */
 .doc-card {
     background: #ffffff;
     border: 1px solid var(--border-card);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 1.2rem;
-    height: 720px;
+    height: 740px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
 }
 
-.doc-header {
+.doc-header-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 0.8rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-card);
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.75rem;
 }
 
-.doc-title {
+.doc-header-title {
     font-weight: 700;
     font-size: 0.95rem;
     color: var(--text-navy);
@@ -192,73 +295,125 @@ body, .stApp {
     gap: 0.5rem;
 }
 
-.doc-badge {
-    background: #f0ece3;
-    padding: 0.25rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
+.doc-header-meta {
+    font-size: 0.8rem;
     font-weight: 600;
-    color: var(--text-navy);
+    color: var(--text-muted);
 }
 
-.doc-content-box {
+.doc-viewer-wrapper {
+    display: flex;
+    gap: 0.8rem;
     flex-grow: 1;
+    overflow: hidden;
+}
+
+/* Left thumbnail strip */
+.thumbnail-strip {
+    width: 62px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     overflow-y: auto;
-    background: #fdfcf9;
-    border: 1px solid #ede8de;
-    border-radius: 8px;
-    padding: 1.4rem;
+    padding-right: 4px;
+}
+
+.thumb-item {
+    width: 52px;
+    height: 68px;
+    background: #fdfdfc;
+    border: 1.5px solid #dcd7cc;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.thumb-item.active {
+    border: 2px solid var(--burgundy) !important;
+    background: #fdf0f3 !important;
+    color: var(--burgundy) !important;
+    box-shadow: 0 2px 6px rgba(136, 19, 55, 0.15) !important;
+}
+
+/* Main Book Page Surface */
+.book-page-canvas {
+    flex-grow: 1;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-paper);
+    border-radius: 10px;
+    padding: 1.8rem 2rem;
+    overflow-y: auto;
     font-family: 'Merriweather', Georgia, serif;
     font-size: 0.95rem;
-    line-height: 1.7;
-    color: #2b3547;
-    white-space: pre-wrap;
+    line-height: 1.75;
+    color: #242e42;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.01), 0 3px 12px rgba(0,0,0,0.03);
+    position: relative;
 }
 
-.doc-highlight {
+.book-page-number {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eeebe2;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Highlighted Quote in Book */
+.book-highlight-box {
     background-color: var(--burgundy-light);
     border-left: 4px solid var(--burgundy);
-    padding: 0.6rem 0.8rem;
-    margin: 0.8rem 0;
-    border-radius: 0 6px 6px 0;
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 8px 8px 0;
     color: var(--burgundy);
     font-weight: 500;
+    position: relative;
 }
 
-.page-indicator-badge {
-    display: inline-block;
+.badge-page-inline {
     background: var(--burgundy);
     color: white;
+    font-family: 'Inter', sans-serif;
     font-size: 0.7rem;
     font-weight: 700;
     padding: 2px 7px;
     border-radius: 10px;
     margin-left: 6px;
-    vertical-align: middle;
+    display: inline-block;
 }
 
-/* Chat Pane (Right Pane) */
-.chat-container-card {
+/* ========================================================================= */
+/* RIGHT COLUMN: HISTORY BOT CHAT CARD                                      */
+/* ========================================================================= */
+.chat-card {
     background: #ffffff;
     border: 1px solid var(--border-card);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 1.2rem;
-    height: 720px;
+    height: 740px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
 }
 
-.chat-header {
+.chat-header-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 0.8rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-card);
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.75rem;
 }
 
-.chat-title {
+.chat-header-title {
     font-weight: 700;
     font-size: 1.05rem;
     display: flex;
@@ -283,94 +438,80 @@ body, .stApp {
     border-radius: 50%;
 }
 
-.chat-history-box {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 0.5rem;
-    margin-bottom: 0.8rem;
-}
-
-/* Chat Bubbles */
+/* Chat Message Bubbles */
 .bubble-user {
-    background: #f0f4f8;
+    background: #edf2f7;
     color: var(--text-navy);
-    padding: 0.8rem 1.1rem;
-    border-radius: 14px 14px 4px 14px;
-    margin-left: 2rem;
+    padding: 0.85rem 1.15rem;
+    border-radius: 16px 16px 4px 16px;
+    margin-left: 2.2rem;
     margin-bottom: 1rem;
     font-size: 0.92rem;
-    border: 1px solid #dce4ec;
+    line-height: 1.5;
+    border: 1px solid #dbe2ec;
 }
 
 .bubble-bot {
-    background: #fbf9f4;
+    background: #fdfcf9;
     color: var(--text-navy);
-    padding: 1.1rem;
-    border-radius: 14px 14px 14px 4px;
-    margin-right: 2rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 16px 16px 16px 4px;
+    margin-right: 2.2rem;
     margin-bottom: 1.2rem;
-    border: 1px solid #ebe4d8;
+    border: 1px solid #eae4d8;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
 }
 
-.bubble-answer {
+.bubble-bot-answer {
     font-size: 0.95rem;
-    line-height: 1.55;
+    line-height: 1.6;
+    color: var(--text-navy);
     margin-bottom: 0.6rem;
-    color: #141e30;
 }
 
-.citation-pill {
+.citation-pill-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     background: var(--burgundy-light);
     color: var(--burgundy);
     border: 1px solid var(--burgundy-border);
-    padding: 0.35rem 0.8rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 20px;
     font-size: 0.82rem;
     font-weight: 700;
-    text-decoration: none;
     margin-top: 0.4rem;
 }
 
-/* Not Found Alert */
+/* Not Found Alert (Matching Mockup Image 2) */
 .not-found-card {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
+    background: #fef4f4;
+    border: 1px solid #fed7d7;
+    border-radius: 10px;
     padding: 0.9rem 1.1rem;
     margin: 0.6rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.not-found-icon {
+    font-size: 1.3rem;
+    color: #991b1b;
+    margin-top: 2px;
 }
 
 .not-found-title {
     font-weight: 700;
     color: #991b1b;
     font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .not-found-desc {
     color: #7f1d1d;
     font-size: 0.82rem;
-    margin-top: 4px;
-}
-
-/* Suggested Question Chips */
-.pill-button {
-    background: #f4efe6;
-    border: 1px solid #dfd8c8;
-    color: var(--text-navy);
-    font-size: 0.8rem;
-    font-weight: 500;
-    padding: 0.35rem 0.75rem;
-    border-radius: 16px;
-    margin-right: 0.4rem;
-    margin-bottom: 0.4rem;
-    display: inline-block;
-    cursor: pointer;
+    margin-top: 3px;
+    line-height: 1.4;
 }
 </style>
 """
@@ -390,19 +531,15 @@ if "current_page" not in st.session_state:
 if "highlight_text" not in st.session_state:
     st.session_state.highlight_text = ""
 
-if "active_tab" not in st.session_state:
-    st.session_state.active_tab = "chat"
-
 
 # -----------------------------------------------------------------------------
-# Cached Backend Loaders
+# Cached Backend Pipeline Loader
 # -----------------------------------------------------------------------------
-@st.cache_resource(show_spinner="Connecting to persistent vector store...")
+@st.cache_resource(show_spinner="Initializing Orient BlackSwan vector database...")
 def get_rag_pipeline():
     """Initializes and caches vector store and RAG chain."""
     vm = VectorStoreManager()
     if not vm.is_indexed():
-        # Check if PDF exists to auto-ingest
         loader = PDFLoader(Config.DEFAULT_PDF_PATH)
         valid, _ = loader.verify_file()
         if valid:
@@ -419,7 +556,7 @@ def get_rag_pipeline():
 
 
 # -----------------------------------------------------------------------------
-# App Header Component
+# Header Component
 # -----------------------------------------------------------------------------
 st.markdown(
     """
@@ -440,7 +577,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Architecture Workflow Diagram
+# Workflow Diagram Bar
 st.markdown(
     """
     <div class="diagram-container">
@@ -465,21 +602,20 @@ st.markdown(
 
 
 # -----------------------------------------------------------------------------
-# Sidebar: Document Management & Diagnostics
+# Sidebar: Settings & Diagnostics
 # -----------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### 📚 Catalogue Knowledge Base")
     pdf_path = Config.DEFAULT_PDF_PATH
     loader = PDFLoader(pdf_path)
-    file_exists, file_msg = loader.verify_file()
+    file_exists, _ = loader.verify_file()
 
     if file_exists:
         st.success(f"**Loaded:** `{pdf_path.name}`")
     else:
         st.error(f"**Missing:** `{pdf_path.name}`")
-        st.caption("Place `History_2024-25.pdf` into the `data/` directory.")
+        st.caption("Place `History_2024-25.pdf` into `data/`.")
 
-    # Ingestion Status Card
     vm_check = VectorStoreManager()
     is_indexed = vm_check.is_indexed()
     meta = vm_check.get_metadata()
@@ -497,103 +633,105 @@ with st.sidebar:
     st.markdown("---")
     col_sb1, col_sb2 = st.columns(2)
     with col_sb1:
-        if st.button("🔄 Rebuild Index", use_container_width=True):
-            with st.spinner("Re-indexing PDF chunks into ChromaDB..."):
+        if st.button("🔄 Rebuild", use_container_width=True, help="Re-index vector database"):
+            with st.spinner("Re-indexing..."):
                 docs, stats = loader.load()
                 from src.text_splitter import DocumentChunker
                 chunker = DocumentChunker(chunk_size=Config.CHUNK_SIZE, chunk_overlap=Config.CHUNK_OVERLAP)
                 chunks = chunker.split_documents(docs)
                 vm_check.index_documents(chunks, stats, force_rebuild=True)
                 st.cache_resource.clear()
-                st.success("Re-indexed!")
                 st.rerun()
 
     with col_sb2:
-        if st.button("🗑️ Clear Chat", use_container_width=True):
+        if st.button("🗑️ Clear Chat", use_container_width=True, help="Reset conversation"):
             st.session_state.messages = []
             st.rerun()
 
     st.markdown("---")
-    st.caption("Orient BlackSwan History Bot • Final Year RAG Project")
+    st.caption("Orient BlackSwan History Bot • RAG Architecture")
 
 
 # -----------------------------------------------------------------------------
-# Main Split Interface: Left = Document Viewer, Right = Chat Bot
+# Main Split Interface: Left = Document Viewer, Right = History Bot Chat
 # -----------------------------------------------------------------------------
 col_doc, col_chat = st.columns([1, 1], gap="medium")
 
 # =============================================================================
-# LEFT COLUMN: Academic Document Viewer
+# LEFT COLUMN: Academic Document Viewer (Matching Screenshot)
 # =============================================================================
 with col_doc:
+    total_pages = int(meta.get("total_pages", 80))
+
+    # Header bar matching Image 2
     st.markdown(
         f"""
-        <div class="doc-header">
-            <div class="doc-title">
-                📖 Orient BlackSwan History Catalogue 2024–25
+        <div class="doc-header-bar">
+            <div class="doc-header-title">
+                📖 Orient BlackSwan History Catalogue
             </div>
-            <div class="doc-badge">
-                Page {st.session_state.current_page} of {meta.get('total_pages', 80)}
+            <div class="doc-header-meta">
+                2024–25 (≈80 pp) &nbsp;|&nbsp; <strong>Page {st.session_state.current_page}</strong> of {total_pages}
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Page Navigator
-    nav_col1, nav_col2, nav_col3 = st.columns([1, 2, 1])
-    with nav_col1:
+    # Page Navigator controls
+    nav_c1, nav_c2, nav_c3 = st.columns([1, 2, 1])
+    with nav_c1:
         if st.button("◀ Prev", key="btn_prev", use_container_width=True):
             if st.session_state.current_page > 1:
                 st.session_state.current_page -= 1
                 st.rerun()
-    with nav_col2:
-        selected_p = st.number_input(
-            "Jump to Page",
+    with nav_c2:
+        chosen_page = st.number_input(
+            "Page",
             min_value=1,
-            max_value=int(meta.get("total_pages", 80)),
+            max_value=total_pages,
             value=st.session_state.current_page,
             label_visibility="collapsed",
-            key="page_input",
+            key="page_selector_input",
         )
-        if selected_p != st.session_state.current_page:
-            st.session_state.current_page = selected_p
+        if chosen_page != st.session_state.current_page:
+            st.session_state.current_page = chosen_page
             st.rerun()
-    with nav_col3:
+    with nav_c3:
         if st.button("Next ▶", key="btn_next", use_container_width=True):
-            if st.session_state.current_page < meta.get("total_pages", 80):
+            if st.session_state.current_page < total_pages:
                 st.session_state.current_page += 1
                 st.rerun()
 
-    # Fetch Page Text
-    current_page_text = loader.get_page_text(st.session_state.current_page)
-    if not current_page_text:
-        current_page_text = (
-            f"[Page {st.session_state.current_page}]\n\n"
-            "This catalogue page contains listings of academic publications, monographs, and textbooks."
-        )
+    # Fetch page text
+    page_text = loader.get_page_text(st.session_state.current_page)
+    if not page_text:
+        page_text = f"Orient BlackSwan History Catalogue 2024–25\n\nPage {st.session_state.current_page}\n\nScholarly monographs and university history textbooks."
 
-    # Highlight evidence quote if applicable
-    highlight = st.session_state.get("highlight_text", "")
-    content_html = ""
-    if highlight and highlight.lower() in current_page_text.lower():
-        # Insert highlight block
-        start_idx = current_page_text.lower().find(highlight.lower())
-        end_idx = start_idx + len(highlight)
-        before = current_page_text[:start_idx]
-        matched = current_page_text[start_idx:end_idx]
-        after = current_page_text[end_idx:]
-        content_html = (
-            f"{before}<div class='doc-highlight'>{matched} "
-            f"<span class='page-indicator-badge'>Page {st.session_state.current_page}</span></div>{after}"
+    # Format text and highlight quotes if applicable
+    highlight = st.session_state.get("highlight_text", "").strip()
+    highlight_clean = re.sub(r'["\']', '', highlight)
+
+    if highlight_clean and len(highlight_clean) > 8 and highlight_clean.lower() in page_text.lower():
+        start_idx = page_text.lower().find(highlight_clean.lower())
+        end_idx = start_idx + len(highlight_clean)
+        before_txt = page_text[:start_idx].replace('\n', '<br>')
+        matched_txt = page_text[start_idx:end_idx]
+        after_txt = page_text[end_idx:].replace('\n', '<br>')
+        rendered_body = (
+            f"{before_txt}<div class='book-highlight-box'>"
+            f"{matched_txt} <span class='badge-page-inline'>Page {st.session_state.current_page}</span>"
+            f"</div>{after_txt}"
         )
     else:
-        content_html = current_page_text.replace("\n", "<br>")
+        rendered_body = page_text.replace("\n", "<br>")
 
+    # Render book page canvas
     st.markdown(
         f"""
-        <div class="doc-content-box">
-            {content_html}
+        <div class="book-page-canvas">
+            {rendered_body}
+            <div class="book-page-number">— Page {st.session_state.current_page} —</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -601,13 +739,13 @@ with col_doc:
 
 
 # =============================================================================
-# RIGHT COLUMN: History Bot Chat
+# RIGHT COLUMN: History Bot Chat (Matching Screenshot)
 # =============================================================================
 with col_chat:
     st.markdown(
         """
-        <div class="chat-header">
-            <div class="chat-title">
+        <div class="chat-header-bar">
+            <div class="chat-header-title">
                 <span>🦢</span> History Bot
             </div>
             <div class="status-online">
@@ -618,21 +756,20 @@ with col_chat:
         unsafe_allow_html=True,
     )
 
-    # Initialize RAG Pipeline
     try:
         vm, rag_chain = get_rag_pipeline()
     except Exception as e:
-        st.error(f"Initialization error: {e}")
+        st.error(f"Pipeline error: {e}")
         st.stop()
 
-    # Container for Chat Messages
+    # Chat Messages Box
     chat_box = st.container(height=420)
     with chat_box:
         if not st.session_state.messages:
             st.markdown(
                 """
                 <div class="bubble-bot">
-                    <div class="bubble-answer">
+                    <div class="bubble-bot-answer">
                         <strong>Welcome to the Orient BlackSwan History Bot!</strong><br>
                         I am your document-grounded research assistant for the <em>Orient BlackSwan History Catalogue 2024–25</em>.
                         Ask any factual question about our history publications, corporate background, or catalogue terms.
@@ -642,7 +779,7 @@ with col_chat:
                 unsafe_allow_html=True,
             )
 
-        for msg in st.session_state.messages:
+        for msg_idx, msg in enumerate(st.session_state.messages):
             if msg["role"] == "user":
                 st.markdown(f'<div class="bubble-user">{msg["content"]}</div>', unsafe_allow_html=True)
             else:
@@ -652,15 +789,16 @@ with col_chat:
                 pages = res.get("pages", [])
                 evidence = res.get("evidence", "")
 
-                if not is_found or answer.strip().lower() == "not found":
+                if not is_found or answer.strip().lower() in {"not found", "not found."}:
                     st.markdown(
                         """
                         <div class="not-found-card">
-                            <div class="not-found-title">
-                                <span>📄</span> Not found in the document
-                            </div>
-                            <div class="not-found-desc">
-                                I couldn't find this information in the catalogue. The document does not provide sufficient evidence to answer this question.
+                            <div class="not-found-icon">📄</div>
+                            <div>
+                                <div class="not-found-title">Not found in the document</div>
+                                <div class="not-found-desc">
+                                    I couldn't find this information in the catalogue. The document does not provide sufficient evidence to answer this question.
+                                </div>
                             </div>
                         </div>
                         """,
@@ -668,16 +806,12 @@ with col_chat:
                     )
                 else:
                     pages_str = ", ".join(str(p) for p in pages) if pages else "1"
-                    citation_html = (
-                        f'<div class="citation-pill">📄 Page {pages_str} ➔</div>'
-                        if pages
-                        else ""
-                    )
+                    citation_html = f'<div class="citation-pill-btn">📄 Page {pages_str} ➔</div>' if pages else ""
 
                     st.markdown(
                         f"""
                         <div class="bubble-bot">
-                            <div class="bubble-answer">{answer}</div>
+                            <div class="bubble-bot-answer">{answer}</div>
                             {citation_html}
                         </div>
                         """,
@@ -688,9 +822,10 @@ with col_chat:
                         with st.expander(f"🔎 Supporting Quotation (Page {pages_str})", expanded=False):
                             st.write(f'"{evidence}"')
 
-    # Suggested Questions Pills
-    st.markdown("<div style='font-size:0.75rem; font-weight:700; color:#5a6578; margin-bottom:6px;'>SUGGESTED QUESTIONS:</div>", unsafe_allow_html=True)
-    suggested_questions = [
+    # Suggested Questions (Compact Pill Buttons)
+    st.markdown("<div style='font-size:0.75rem; font-weight:700; color:#64748b; margin-bottom:6px;'>SUGGESTED QUESTIONS:</div>", unsafe_allow_html=True)
+    
+    suggested_q_list = [
         "In which year was the publisher (Orient BlackSwan) incorporated?",
         "On what date were the prices in this catalogue last updated?",
         "What is the price of a Physics textbook?",
@@ -698,56 +833,52 @@ with col_chat:
         "Which is the \"best\" history book for a beginner?",
     ]
 
-    # Render quick pill buttons in a compact row
-    c_p1, c_p2 = st.columns([1, 1])
-    clicked_suggested = None
-    with c_p1:
-        if st.button("🏢 Incorporation Year", key="sugg_1", use_container_width=True):
-            clicked_suggested = suggested_questions[0]
-        if st.button("🧪 Price of Physics Textbook", key="sugg_3", use_container_width=True):
-            clicked_suggested = suggested_questions[2]
-        if st.button("🌟 Best Beginner History Book", key="sugg_5", use_container_width=True):
-            clicked_suggested = suggested_questions[4]
+    c_s1, c_s2 = st.columns(2)
+    selected_suggested = None
+    with c_s1:
+        if st.button("🏢 Incorporation Year", key="btn_sugg_incorp", use_container_width=True):
+            selected_suggested = suggested_q_list[0]
+        if st.button("🧪 Price of Physics Textbook", key="btn_sugg_phys", use_container_width=True):
+            selected_suggested = suggested_q_list[2]
+        if st.button("🌟 Best Beginner History Book", key="btn_sugg_best", use_container_width=True):
+            selected_suggested = suggested_q_list[4]
 
-    with c_p2:
-        if st.button("📅 Price Update Date", key="sugg_2", use_container_width=True):
-            clicked_suggested = suggested_questions[1]
-        if st.button("🏛️ Minister of Education", key="sugg_4", use_container_width=True):
-            clicked_suggested = suggested_questions[3]
+    with c_s2:
+        if st.button("📅 Price Update Date", key="btn_sugg_price", use_container_width=True):
+            selected_suggested = suggested_q_list[1]
+        if st.button("🏛️ Minister of Education", key="btn_sugg_min", use_container_width=True):
+            selected_suggested = suggested_q_list[3]
 
-    # Input Box Form
+    # Input Form
     with st.form("chat_form", clear_on_submit=True):
         col_inp, col_btn = st.columns([5, 1])
         with col_inp:
-            user_input = st.text_input(
-                "Ask a question about the document...",
-                placeholder="Ask a question about the catalogue...",
+            form_text = st.text_input(
+                "Ask a question...",
+                placeholder="Ask a question about the document...",
                 label_visibility="collapsed",
-                key="chat_input",
+                key="user_text_input",
             )
         with col_btn:
-            submit_btn = st.form_submit_button("Send ➔", use_container_width=True)
+            submit_action = st.form_submit_button("Send ➔", use_container_width=True)
 
-    # Process Query
-    query_to_run = clicked_suggested or (user_input if submit_btn else None)
+    # Trigger Question
+    prompt_to_run = selected_suggested or (form_text if submit_action else None)
 
-    if query_to_run:
-        clean_q = query_to_run.strip()
-        if clean_q:
-            # Append user message
-            st.session_state.messages.append({"role": "user", "content": clean_q})
+    if prompt_to_run:
+        clean_prompt = prompt_to_run.strip()
+        if clean_prompt:
+            st.session_state.messages.append({"role": "user", "content": clean_prompt})
 
-            # Run RAG Chain
-            with st.spinner("Retrieving document chunks and grounding answer..."):
-                response = rag_chain.query(clean_q)
+            with st.spinner("Retrieving document chunks..."):
+                response = rag_chain.query(clean_prompt)
 
-            # Auto-sync document viewer to cited page if found
+            # Auto-sync viewer to cited page and highlight quote
             if response["is_found"] and response.get("pages"):
-                first_page = response["pages"][0]
-                st.session_state.current_page = first_page
+                cited_page = response["pages"][0]
+                st.session_state.current_page = cited_page
                 st.session_state.highlight_text = response.get("evidence", "")
 
-            # Append assistant message
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": response["answer"],
