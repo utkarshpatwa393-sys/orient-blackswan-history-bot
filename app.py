@@ -1,7 +1,7 @@
 """
-Orient BlackSwan History Bot - Redesigned Academic Editorial Interface
+Orient BlackSwan History Bot - Polished Academic Editorial Interface
 A document-grounded RAG research assistant built with LangChain, ChromaDB, and Google Gemini.
-Adheres strictly to the Orient BlackSwan Editorial Design System.
+Adheres strictly to the light academic design system: zero black flashes, light sidebar, crystal-clear tabs.
 """
 
 import sys
@@ -23,46 +23,49 @@ from src.citations import CitationManager
 
 
 # -----------------------------------------------------------------------------
-# Page Configuration & Editorial CSS Design System
+# Streamlit Configuration & Comprehensive CSS Architecture
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Orient BlackSwan History Bot",
-    page_icon="📚",
+    page_icon="📖",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-EDITORIAL_CSS = """
+EDITORIAL_THEME_CSS = """
 <style>
-/* Import Classical & Modern Typography */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap');
+/* Font Imports */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap');
 
 /* Exact Design System Tokens */
 :root {
-    --bg-main: #F7F5F0;
-    --surface-main: #FFFFFF;
+    --bg-page: #F7F5F0;
+    --surface-card: #FFFFFF;
     --surface-secondary: #F1EEE7;
     --primary-navy: #192C46;
     --primary-burgundy: #8D2947;
     --burgundy-hover: #742039;
     --burgundy-active: #651A32;
-    --text-main: #242B35;
+    --burgundy-pale: #FDF2F4;
+    --burgundy-pale-border: #F5D5DE;
+    --text-primary: #242B35;
     --text-secondary: #707783;
     --border-color: #E3DED5;
     --success-green: #287A57;
-    --error-red: #B93838;
+    --success-bg: #EBF5F0;
     --focus-ring: #C58A9D;
 }
 
-/* Global Reset & Prevent Mobile Tap Flashes */
+/* Global Reset */
 *, *::before, *::after {
     -webkit-tap-highlight-color: transparent !important;
     box-sizing: border-box;
 }
 
+/* Background & Body */
 body, .stApp {
-    background-color: var(--bg-main) !important;
-    color: var(--text-main) !important;
+    background-color: var(--bg-page) !important;
+    color: var(--text-primary) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     font-size: 15px;
     line-height: 1.6;
@@ -71,26 +74,158 @@ body, .stApp {
 /* Main Container Max-Width Alignment */
 .main .block-container {
     max-width: 1140px !important;
-    padding-top: 1.8rem !important;
+    padding-top: 1.2rem !important;
     padding-bottom: 3.5rem !important;
 }
 
 /* ========================================================================= */
-/* CRITICAL FIX: EXPLICIT INTERACTION STATES FOR ALL BUTTONS (NO BLACK FLASH)*/
+/* 1. SIDEBAR: FORCE LIGHT WARM IVORY BACKGROUND (NO DARK CHARCOAL)         */
+/* ========================================================================= */
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"] > div:first-child,
+div[data-testid="stSidebarContent"] {
+    background-color: #F1EEE7 !important;
+    background: #F1EEE7 !important;
+    color: var(--text-primary) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] div,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: var(--text-primary) !important;
+}
+
+section[data-testid="stSidebar"] .stCaption,
+section[data-testid="stSidebar"] caption {
+    color: var(--text-secondary) !important;
+}
+
+/* Sidebar Custom Cards */
+.sidebar-section-card {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    padding: 0.95rem 1rem !important;
+    margin-bottom: 0.9rem !important;
+    box-shadow: 0 1px 3px rgba(25, 44, 70, 0.03) !important;
+}
+
+.sidebar-section-title {
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.2px !important;
+    text-transform: uppercase !important;
+    color: var(--primary-navy) !important;
+    margin-bottom: 0.65rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.sidebar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    padding: 0.28rem 0;
+    border-bottom: 1px dashed #EDE8DE;
+}
+
+.sidebar-row:last-child {
+    border-bottom: none;
+}
+
+.sidebar-row-label {
+    color: var(--text-secondary);
+}
+
+.sidebar-row-value {
+    font-weight: 600;
+    color: var(--primary-navy);
+}
+
+/* ========================================================================= */
+/* 2. TABS: FIX INVISIBLE TEXT (BOTH ACTIVE & INACTIVE CLEARLY READABLE)      */
+/* ========================================================================= */
+div[data-testid="stTabs"] {
+    background: transparent !important;
+    margin-bottom: 1.2rem !important;
+}
+
+div[data-baseweb="tab-list"] {
+    background-color: #F1EEE7 !important;
+    border-radius: 10px !important;
+    padding: 4px !important;
+    border: 1px solid var(--border-color) !important;
+    gap: 6px !important;
+}
+
+/* Inactive Tab: Clear Dark Slate Text on Warm Ivory */
+button[data-baseweb="tab"] {
+    color: #4A5568 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    background-color: transparent !important;
+    border-radius: 8px !important;
+    border: none !important;
+    padding: 0.5rem 1.3rem !important;
+    transition: all 160ms ease !important;
+}
+
+button[data-baseweb="tab"] p,
+button[data-baseweb="tab"] span {
+    color: #4A5568 !important;
+}
+
+/* Inactive Tab Hover */
+button[data-baseweb="tab"]:hover {
+    color: var(--primary-burgundy) !important;
+    background-color: #FFFFFF !important;
+}
+
+button[data-baseweb="tab"]:hover p,
+button[data-baseweb="tab"]:hover span {
+    color: var(--primary-burgundy) !important;
+}
+
+/* Active Tab: Bold White Text on Solid Burgundy */
+button[data-baseweb="tab"][aria-selected="true"] {
+    background-color: var(--primary-burgundy) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(141, 41, 71, 0.25) !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] p,
+button[data-baseweb="tab"][aria-selected="true"] span {
+    color: #FFFFFF !important;
+}
+
+/* Remove default Streamlit red underline bar */
+div[data-baseweb="tab-highlight"] {
+    display: none !important;
+}
+
+/* ========================================================================= */
+/* 3. BUTTONS: COMPREHENSIVE ANTI-BLACK FIX ON CLICK / TAP / FOCUS          */
 /* ========================================================================= */
 
-/* General / Secondary Buttons */
+/* Secondary / Standard Buttons (Card triggers, Navigation, Reset) */
 .stButton > button,
 button[kind="secondary"],
 div[data-testid="stBaseButton-secondary"] {
-    background-color: var(--surface-main) !important;
-    color: var(--text-main) !important;
+    background-color: #FFFFFF !important;
+    color: var(--text-primary) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 10px !important;
-    padding: 0.55rem 1.1rem !important;
-    font-weight: 500 !important;
-    font-size: 0.88rem !important;
-    line-height: 1.4 !important;
+    border-radius: 9px !important;
+    padding: 0.52rem 1rem !important;
+    font-weight: 600 !important;
+    font-size: 0.86rem !important;
     box-shadow: 0 1px 2px rgba(25, 44, 70, 0.04) !important;
     transition: background-color 160ms ease,
                 border-color 160ms ease,
@@ -103,7 +238,7 @@ div[data-testid="stBaseButton-secondary"] {
 .stButton > button:hover,
 button[kind="secondary"]:hover,
 div[data-testid="stBaseButton-secondary"]:hover {
-    background-color: var(--surface-secondary) !important;
+    background-color: #F1EEE7 !important;
     color: var(--primary-burgundy) !important;
     border-color: var(--focus-ring) !important;
     transform: translateY(-1px) !important;
@@ -126,7 +261,7 @@ button[kind="secondary"]:focus,
 button[kind="secondary"]:focus-visible,
 div[data-testid="stBaseButton-secondary"]:focus,
 div[data-testid="stBaseButton-secondary"]:focus-visible {
-    background-color: var(--surface-main) !important;
+    background-color: #FFFFFF !important;
     color: var(--primary-burgundy) !important;
     outline: 3px solid var(--focus-ring) !important;
     outline-offset: 2px !important;
@@ -141,7 +276,7 @@ div[data-testid="stBaseButton-primary"] {
     color: #FFFFFF !important;
     border: 1px solid var(--primary-burgundy) !important;
     border-radius: 10px !important;
-    padding: 0.6rem 1.3rem !important;
+    padding: 0.6rem 1.25rem !important;
     font-weight: 600 !important;
     font-size: 0.92rem !important;
     box-shadow: 0 2px 5px rgba(141, 41, 71, 0.25) !important;
@@ -181,22 +316,11 @@ button[kind="primary"]:focus-visible {
     box-shadow: 0 0 0 2px #FFFFFF !important;
 }
 
-/* Disabled State */
-button:disabled,
-button[disabled] {
-    background-color: var(--surface-secondary) !important;
-    color: var(--text-secondary) !important;
-    border-color: var(--border-color) !important;
-    cursor: not-allowed !important;
-    box-shadow: none !important;
-    transform: none !important;
-}
-
-/* Form Input Field Styling */
+/* Input Fields */
 div[data-baseweb="input"] {
-    background-color: var(--surface-main) !important;
+    background-color: #FFFFFF !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
+    border-radius: 11px !important;
     transition: border-color 160ms ease, box-shadow 160ms ease !important;
     box-shadow: 0 1px 3px rgba(25, 44, 70, 0.03) !important;
 }
@@ -207,95 +331,95 @@ div[data-baseweb="input"]:focus-within {
 }
 
 div[data-baseweb="input"] input {
-    color: var(--text-main) !important;
+    color: var(--text-primary) !important;
     font-size: 0.95rem !important;
     padding: 0.65rem 0.9rem !important;
     background-color: transparent !important;
 }
 
 /* ========================================================================= */
-/* PREMIUM HEADER                                                            */
+/* 4. COMPACT & RESPONSIVE HEADER                                            */
 /* ========================================================================= */
-.editorial-header {
-    background: var(--surface-main);
+.compact-header {
+    background: #FFFFFF;
     border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 1.25rem 1.8rem;
-    margin-bottom: 1.25rem;
+    border-radius: 12px;
+    padding: 0.95rem 1.4rem;
+    margin-bottom: 1.1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(25, 44, 70, 0.03);
+    box-shadow: 0 1px 4px rgba(25, 44, 70, 0.03);
+    flex-wrap: wrap;
+    gap: 0.8rem;
 }
 
-.header-brand-block {
+.header-brand-wrap {
     display: flex;
     align-items: center;
-    gap: 1.2rem;
+    gap: 0.9rem;
 }
 
-.header-emblem {
-    width: 48px;
-    height: 48px;
+.header-emblem-badge {
+    width: 42px;
+    height: 42px;
     background: var(--primary-navy);
     color: #FFFFFF;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    box-shadow: 0 3px 8px rgba(25, 44, 70, 0.15);
+    font-size: 20px;
+    flex-shrink: 0;
 }
 
-.header-title-main {
+.header-title-text {
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 1.7rem;
+    font-size: 1.45rem;
     font-weight: 700;
     color: var(--primary-navy);
     line-height: 1.15;
     margin: 0;
-    letter-spacing: 0.5px;
 }
 
-.header-title-main span {
+.header-title-text span {
     color: var(--primary-burgundy);
 }
 
-.header-subtitle-text {
+.header-subtitle-line {
     font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1.8px;
-    text-transform: uppercase;
+    font-weight: 600;
     color: var(--text-secondary);
-    margin-top: 3px;
+    margin-top: 2px;
 }
 
-.header-status-side {
-    text-align: right;
+.header-right-side {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
 }
 
-.header-tagline-text {
+.header-tagline-quote {
     font-family: 'Newsreader', Georgia, serif;
     font-style: italic;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--primary-navy);
-    margin-bottom: 4px;
 }
 
-.header-badge-ready {
+.ready-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    background: #EBF5F0;
+    background: var(--success-bg);
     color: var(--success-green);
     border: 1px solid #C4E2D3;
     padding: 0.25rem 0.65rem;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-.header-badge-dot {
+.ready-pill-dot {
     width: 7px;
     height: 7px;
     background: var(--success-green);
@@ -303,139 +427,125 @@ div[data-baseweb="input"] input {
 }
 
 /* ========================================================================= */
-/* WELCOME SECTION                                                           */
+/* 5. WELCOME HERO & SUGGESTED QUESTIONS (NO DUPLICATE BUTTONS)              */
 /* ========================================================================= */
-.welcome-hero-card {
-    background: var(--surface-main);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 2.2rem 2.4rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(25, 44, 70, 0.02);
-}
-
-.welcome-hero-title {
-    font-family: 'Cinzel', Georgia, serif;
-    font-size: 1.55rem;
-    font-weight: 700;
-    color: var(--primary-navy);
-    margin-bottom: 0.5rem;
-}
-
-.welcome-hero-desc {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 1.6rem;
-    max-width: 820px;
-}
-
-.suggested-label-small {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 0.8rem;
-}
-
-/* Suggested Question Cards */
-.suggested-card {
-    background: var(--surface-secondary);
+.welcome-box {
+    background: #FFFFFF;
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 1.1rem 1.2rem;
-    transition: all 160ms ease;
-    cursor: pointer;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: 1.3rem;
+    box-shadow: 0 1px 4px rgba(25, 44, 70, 0.02);
+}
+
+.welcome-heading {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    margin-bottom: 0.4rem;
+}
+
+.welcome-summary {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 0.4rem;
+}
+
+.suggested-section-title {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 1.1rem 0 0.7rem 0;
+}
+
+/* Suggested Question Card Container */
+.question-card-outer {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.1rem 1.15rem;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(25, 44, 70, 0.02);
+    transition: all 160ms ease;
 }
 
-.suggested-card:hover {
-    background: #FAF8F5;
+.question-card-outer:hover {
     border-color: var(--focus-ring);
-    box-shadow: 0 4px 10px rgba(141, 41, 71, 0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(141, 41, 71, 0.08);
 }
 
-.suggested-card-num {
-    font-size: 0.75rem;
+.question-card-tag {
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--primary-burgundy);
-    margin-bottom: 0.4rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    margin-bottom: 0.4rem;
 }
 
-.suggested-card-text {
-    font-size: 0.9rem;
+.question-card-query {
+    font-size: 0.92rem;
     font-weight: 600;
     color: var(--primary-navy);
     line-height: 1.45;
-}
-
-.suggested-card-arrow {
-    margin-top: 0.8rem;
-    font-size: 0.82rem;
-    color: var(--primary-burgundy);
-    font-weight: 600;
+    margin-bottom: 1rem;
+    flex-grow: 1;
 }
 
 /* ========================================================================= */
-/* CHAT MESSAGES & CONVERSATION                                              */
+/* 6. CHAT CONVERSATION MESSAGES & CITATION CARDS                            */
 /* ========================================================================= */
-.chat-conversation-area {
-    margin-bottom: 1.5rem;
-}
-
-.bubble-user-row {
+.user-msg-row {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
 }
 
-.bubble-user-card {
-    background: var(--surface-secondary);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    border-radius: 14px 14px 2px 14px;
-    padding: 0.9rem 1.25rem;
-    max-width: 80%;
-    font-size: 0.95rem;
-    line-height: 1.55;
+.user-msg-bubble {
+    background: var(--burgundy-pale);
+    color: var(--primary-navy);
+    border: 1px solid var(--burgundy-pale-border);
+    border-radius: 14px 14px 3px 14px;
+    padding: 0.85rem 1.2rem;
+    max-width: 82%;
+    font-size: 0.94rem;
+    line-height: 1.5;
     box-shadow: 0 1px 3px rgba(25, 44, 70, 0.03);
 }
 
-.bubble-assistant-row {
+.assistant-msg-row {
     display: flex;
     justify-content: flex-start;
-    margin-bottom: 1.4rem;
+    margin-bottom: 1.3rem;
 }
 
-.bubble-assistant-card {
-    background: var(--surface-main);
-    color: var(--text-main);
+.assistant-msg-bubble {
+    background: #FFFFFF;
+    color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 14px 14px 14px 2px;
-    padding: 1.3rem 1.5rem;
+    border-radius: 14px 14px 14px 3px;
+    padding: 1.2rem 1.4rem;
     max-width: 90%;
-    box-shadow: 0 2px 8px rgba(25, 44, 70, 0.03);
+    box-shadow: 0 2px 6px rgba(25, 44, 70, 0.03);
 }
 
-.assistant-answer-text {
-    font-size: 0.98rem;
+.assistant-answer-content {
+    font-size: 0.96rem;
     line-height: 1.65;
-    color: var(--text-main);
-    margin-bottom: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.85rem;
 }
 
-/* ========================================================================= */
-/* CITATION CARD (SUPPORTED ANSWER)                                          */
-/* ========================================================================= */
-.citation-box-card {
-    background: #FAF8F5;
+/* Grounded Citation Card */
+.citation-panel {
+    background: #F1EEE7;
     border-left: 4px solid var(--primary-burgundy);
     border-top: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
@@ -445,14 +555,15 @@ div[data-baseweb="input"] input {
     margin-top: 0.85rem;
 }
 
-.citation-header-line {
+.citation-header-flex {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
 }
 
-.citation-badge-source {
+.citation-source-label {
     background: var(--primary-navy);
     color: #FFFFFF;
     font-size: 0.72rem;
@@ -463,13 +574,13 @@ div[data-baseweb="input"] input {
     border-radius: 4px;
 }
 
-.citation-meta-file {
+.citation-file-title {
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--primary-navy);
 }
 
-.citation-page-pill {
+.citation-page-badge {
     background: #F8EBF0;
     color: var(--primary-burgundy);
     border: 1px solid #E3BDCB;
@@ -480,7 +591,7 @@ div[data-baseweb="input"] input {
     margin-left: auto;
 }
 
-.citation-quote-preview {
+.citation-quote-italic {
     font-family: 'Newsreader', Georgia, serif;
     font-style: italic;
     font-size: 0.92rem;
@@ -489,94 +600,49 @@ div[data-baseweb="input"] input {
     margin-top: 0.35rem;
 }
 
-/* ========================================================================= */
-/* NOT FOUND PANEL                                                           */
-/* ========================================================================= */
-.not-found-panel {
-    background: var(--surface-secondary);
+/* Neutral Not Found Panel */
+.not-found-container {
+    background: #F1EEE7;
     border: 1px solid var(--border-color);
-    border-left: 4px solid var(--text-secondary);
+    border-left: 4px solid #707783;
     border-radius: 0 8px 8px 0;
-    padding: 1rem 1.25rem;
-    margin-top: 0.5rem;
+    padding: 0.95rem 1.2rem;
+    margin-top: 0.4rem;
 }
 
-.not-found-status-title {
+.not-found-heading {
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-primary);
     font-size: 0.92rem;
-    margin-bottom: 0.25rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
+    margin-bottom: 0.2rem;
 }
 
-.not-found-explanation {
+.not-found-body {
     color: var(--text-secondary);
-    font-size: 0.86rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.45;
 }
 
 /* ========================================================================= */
-/* SIDEBAR METRICS & STYLING                                                 */
+/* 7. DOCUMENT READER SHEET                                                  */
 /* ========================================================================= */
-.sidebar-panel-box {
-    background: var(--surface-main);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.sidebar-panel-title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--primary-navy);
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.sidebar-stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.83rem;
-    padding: 0.3rem 0;
-    border-bottom: 1px dashed #EDE8DE;
-}
-
-.sidebar-stat-item:last-child {
-    border-bottom: none;
-}
-
-.sidebar-stat-key {
-    color: var(--text-secondary);
-}
-
-.sidebar-stat-val {
-    font-weight: 600;
-    color: var(--primary-navy);
-}
-
-/* Academic Book Document Reader Surface */
-.book-paper-sheet {
+.reader-paper-box {
     background: #FFFFFF;
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 2.2rem 2.6rem;
+    padding: 2.2rem 2.5rem;
     font-family: 'Newsreader', Georgia, serif;
     font-size: 1.05rem;
     line-height: 1.8;
-    color: #242B35;
-    box-shadow: 0 3px 12px rgba(25, 44, 70, 0.04);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(25, 44, 70, 0.03);
     min-height: 520px;
 }
 
-.book-paper-header {
+.reader-header-line {
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.75rem;
     margin-bottom: 1.5rem;
@@ -588,17 +654,7 @@ div[data-baseweb="input"] input {
     color: var(--text-secondary);
 }
 
-.book-paper-footer {
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-    margin-top: 2rem;
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-}
-
-.book-evidence-highlight {
+.reader-highlight-callout {
     background-color: #F8EBF0;
     border-left: 3px solid var(--primary-burgundy);
     padding: 0.8rem 1rem;
@@ -610,7 +666,7 @@ div[data-baseweb="input"] input {
 </style>
 """
 
-st.markdown(EDITORIAL_CSS, unsafe_allow_html=True)
+st.markdown(EDITORIAL_THEME_CSS, unsafe_allow_html=True)
 
 
 # -----------------------------------------------------------------------------
@@ -625,14 +681,14 @@ if "current_page" not in st.session_state:
 if "highlight_text" not in st.session_state:
     st.session_state.highlight_text = ""
 
-if "selected_query_to_run" not in st.session_state:
-    st.session_state.selected_query_to_run = None
+if "active_question_to_run" not in st.session_state:
+    st.session_state.active_question_to_run = None
 
 
 # -----------------------------------------------------------------------------
-# Backend RAG Pipeline Loader (Preserved intact)
+# Backend RAG Pipeline Loader
 # -----------------------------------------------------------------------------
-@st.cache_resource(show_spinner="Connecting to Orient BlackSwan vector database...")
+@st.cache_resource(show_spinner="Connecting to persistent vector store...")
 def get_rag_pipeline():
     """Initializes and caches the persistent vector store and grounded RAG chain."""
     vm = VectorStoreManager()
@@ -653,7 +709,7 @@ def get_rag_pipeline():
 
 
 # -----------------------------------------------------------------------------
-# Header Component
+# Header: Compact & Fully Responsive
 # -----------------------------------------------------------------------------
 vm_check = VectorStoreManager()
 is_indexed = vm_check.is_indexed()
@@ -662,18 +718,18 @@ total_doc_pages = int(meta.get("total_pages", 80))
 
 st.markdown(
     f"""
-    <div class="editorial-header">
-        <div class="header-brand-block">
-            <div class="header-emblem">📖</div>
+    <div class="compact-header">
+        <div class="header-brand-wrap">
+            <div class="header-emblem-badge">📖</div>
             <div>
-                <h1 class="header-title-main">Orient BlackSwan <span>History Bot</span></h1>
-                <div class="header-subtitle-text">Grounded Academic AI Research Assistant</div>
+                <h1 class="header-title-text">Orient BlackSwan <span>History Bot</span></h1>
+                <div class="header-subtitle-line">Grounded Academic AI Research Assistant</div>
             </div>
         </div>
-        <div class="header-status-side">
-            <div class="header-tagline-text">Ask. Explore. Learn.</div>
-            <div class="header-badge-ready">
-                <span class="header-badge-dot"></span>
+        <div class="header-right-side">
+            <div class="header-tagline-quote">Ask. Explore. Learn.</div>
+            <div class="ready-pill">
+                <span class="ready-pill-dot"></span>
                 <span>{'Index Ready' if is_indexed else 'Indexing Required'}</span>
             </div>
         </div>
@@ -684,83 +740,83 @@ st.markdown(
 
 
 # -----------------------------------------------------------------------------
-# Sidebar: Knowledge Source, Index Management & About
+# Sidebar: Light Warm Ivory Theme with Clean White Cards
 # -----------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown(
-        """
-        <div class="sidebar-panel-box">
-            <div class="sidebar-panel-title">📚 Knowledge Source</div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">Document</span>
-                <span class="sidebar-stat-val">History_2024-25.pdf</span>
-            </div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">Scope</span>
-                <span class="sidebar-stat-val">History Catalogue</span>
-            </div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">Indexed Pages</span>
-                <span class="sidebar-stat-val">""" + str(total_doc_pages) + """ pp</span>
-            </div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">Total Chunks</span>
-                <span class="sidebar-stat-val">""" + str(meta.get("chunk_count", 81)) + """</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     pdf_loader = PDFLoader(Config.DEFAULT_PDF_PATH)
     file_exists, _ = pdf_loader.verify_file()
 
     st.markdown(
-        """
-        <div class="sidebar-panel-box">
-            <div class="sidebar-panel-title">⚙️ Index Management</div>
+        f"""
+        <div class="sidebar-section-card">
+            <div class="sidebar-section-title">📚 Knowledge Source</div>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Document</span>
+                <span class="sidebar-row-value">History_2024-25.pdf</span>
+            </div>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Availability</span>
+                <span class="sidebar-row-value">{'✅ Verified' if file_exists else '⚠️ Missing'}</span>
+            </div>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Indexed Pages</span>
+                <span class="sidebar-row-value">{total_doc_pages} pages</span>
+            </div>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Vector Chunks</span>
+                <span class="sidebar-row-value">{meta.get('chunk_count', 81)} chunks</span>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col_idx1, col_idx2 = st.columns(2)
-    with col_idx1:
-        if st.button("🔄 Rebuild Index", use_container_width=True, help="Rebuild vector index from scratch"):
-            with st.spinner("Rebuilding persistent ChromaDB vector store..."):
+    st.markdown(
+        """
+        <div class="sidebar-section-card">
+            <div class="sidebar-section-title">⚙️ Index Management</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col_btn_rebuild, col_btn_clear = st.columns(2)
+    with col_btn_rebuild:
+        if st.button("🔄 Rebuild", use_container_width=True, help="Re-index the PDF into ChromaDB"):
+            with st.spinner("Re-indexing..."):
                 docs, stats = pdf_loader.load()
                 from src.text_splitter import DocumentChunker
                 chunker = DocumentChunker(chunk_size=Config.CHUNK_SIZE, chunk_overlap=Config.CHUNK_OVERLAP)
                 chunks = chunker.split_documents(docs)
                 vm_check.index_documents(chunks, stats, force_rebuild=True)
                 st.cache_resource.clear()
-                st.success("Rebuilt index!")
+                st.success("Index rebuilt!")
                 st.rerun()
 
-    with col_idx2:
-        if st.button("🗑️ Clear Chat", use_container_width=True, help="Reset the conversation history"):
+    with col_btn_clear:
+        if st.button("🗑️ Clear Chat", use_container_width=True, help="Clear conversation messages"):
             st.session_state.messages = []
             st.rerun()
 
     st.markdown(
         f"""
-        <div class="sidebar-panel-box">
-            <div class="sidebar-panel-title">🛡️ Grounding & Model</div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">LLM Model</span>
-                <span class="sidebar-stat-val">{Config.GOOGLE_MODEL}</span>
+        <div class="sidebar-section-card">
+            <div class="sidebar-section-title">🛡️ Grounding & Model</div>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Model</span>
+                <span class="sidebar-row-value">{Config.GOOGLE_MODEL}</span>
             </div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">Embeddings</span>
-                <span class="sidebar-stat-val">{Config.GOOGLE_EMBEDDING_MODEL.split('/')[-1]}</span>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Embeddings</span>
+                <span class="sidebar-row-value">{Config.GOOGLE_EMBEDDING_MODEL.split('/')[-1]}</span>
             </div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">Vector DB</span>
-                <span class="sidebar-stat-val">ChromaDB</span>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">Vector Store</span>
+                <span class="sidebar-row-value">ChromaDB</span>
             </div>
-            <div class="sidebar-stat-item">
-                <span class="sidebar-stat-key">API Key</span>
-                <span class="sidebar-stat-val">{Config.get_masked_api_key()}</span>
+            <div class="sidebar-row">
+                <span class="sidebar-row-label">API Key</span>
+                <span class="sidebar-row-value">{Config.get_masked_api_key()}</span>
             </div>
         </div>
         """,
@@ -771,9 +827,9 @@ with st.sidebar:
 
 
 # -----------------------------------------------------------------------------
-# Main Application Tabs: Research Assistant & Catalogue Reader
+# Main Tabs: High Contrast & Crystal Clear
 # -----------------------------------------------------------------------------
-tab_chat, tab_reader = st.tabs(["💬 Research Assistant", "📖 Catalogue Document Reader"])
+tab_research, tab_catalogue = st.tabs(["💬 Research Assistant", "📖 Catalogue Document Reader"])
 
 # Initialize RAG Pipeline
 try:
@@ -784,88 +840,78 @@ except Exception as e:
 
 
 # =============================================================================
-# TAB 1: RESEARCH ASSISTANT (Centered, spacious, premium chat)
+# TAB 1: RESEARCH ASSISTANT (Chat & Welcome Hero)
 # =============================================================================
-with tab_chat:
-    # 1. Welcome Section (Rendered when no conversation has taken place)
+with tab_research:
+    # 1. Welcome Section (Displayed only before user starts asking questions)
     if not st.session_state.messages:
         st.markdown(
             """
-            <div class="welcome-hero-card">
-                <div class="welcome-hero-title">Your History Research Assistant</div>
-                <div class="welcome-hero-desc">
+            <div class="welcome-box">
+                <div class="welcome-heading">Your History Research Assistant</div>
+                <div class="welcome-summary">
                     Ask questions about the <strong>Orient BlackSwan History Catalogue 2024–25</strong> and receive 
-                    answers grounded exclusively in the document, with verified page references and supporting quotations.
+                    evidence-based answers with verified page references.
                 </div>
-                <div class="suggested-label-small">SUGGESTED RESEARCH QUESTIONS:</div>
             </div>
+            <div class="suggested-section-title">SUGGESTED RESEARCH QUESTIONS:</div>
             """,
             unsafe_allow_html=True,
         )
 
-        # 3 Elegant Clickable Suggested Question Cards
-        sugg_col1, sugg_col2, sugg_col3 = st.columns(3)
-        with sugg_col1:
+        # 3 Clean Cards with EXACTLY ONE button each (No duplicate controls!)
+        card_col1, card_col2, card_col3 = st.columns(3)
+        with card_col1:
             st.markdown(
                 """
-                <div class="suggested-card">
-                    <div>
-                        <div class="suggested-card-num">Question 1</div>
-                        <div class="suggested-card-text">When were the catalogue prices last updated?</div>
-                    </div>
-                    <div class="suggested-card-arrow">Ask Question ➔</div>
+                <div class="question-card-outer">
+                    <div class="question-card-tag">Question 1</div>
+                    <div class="question-card-query">When were the catalogue prices last updated?</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button("Submit Q1", key="btn_q1_hero", use_container_width=True):
-                st.session_state.selected_query_to_run = "On what date were the prices in this catalogue last updated?"
+            if st.button("Ask question →", key="btn_q1_single", use_container_width=True):
+                st.session_state.active_question_to_run = "On what date were the prices in this catalogue last updated?"
                 st.rerun()
 
-        with sugg_col2:
+        with card_col2:
             st.markdown(
                 """
-                <div class="suggested-card">
-                    <div>
-                        <div class="suggested-card-num">Question 2</div>
-                        <div class="suggested-card-text">In which year was Orient BlackSwan incorporated?</div>
-                    </div>
-                    <div class="suggested-card-arrow">Ask Question ➔</div>
+                <div class="question-card-outer">
+                    <div class="question-card-tag">Question 2</div>
+                    <div class="question-card-query">In which year was Orient BlackSwan incorporated?</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button("Submit Q2", key="btn_q2_hero", use_container_width=True):
-                st.session_state.selected_query_to_run = "In which year was the publisher (Orient BlackSwan) incorporated?"
+            if st.button("Ask question →", key="btn_q2_single", use_container_width=True):
+                st.session_state.active_question_to_run = "In which year was the publisher (Orient BlackSwan) incorporated?"
                 st.rerun()
 
-        with sugg_col3:
+        with card_col3:
             st.markdown(
                 """
-                <div class="suggested-card">
-                    <div>
-                        <div class="suggested-card-num">Question 3</div>
-                        <div class="suggested-card-text">Find a Physics textbook and its listed price.</div>
-                    </div>
-                    <div class="suggested-card-arrow">Ask Question ➔</div>
+                <div class="question-card-outer">
+                    <div class="question-card-tag">Question 3</div>
+                    <div class="question-card-query">Find a Physics textbook and its listed price.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button("Submit Q3", key="btn_q3_hero", use_container_width=True):
-                st.session_state.selected_query_to_run = "What is the price of a Physics textbook?"
+            if st.button("Ask question →", key="btn_q3_single", use_container_width=True):
+                st.session_state.active_question_to_run = "What is the price of a Physics textbook?"
                 st.rerun()
 
-        st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 1.2rem;'></div>", unsafe_allow_html=True)
 
     # 2. Chat Conversation History
-    st.markdown('<div class="chat-conversation-area">', unsafe_allow_html=True)
-    for msg_idx, msg in enumerate(st.session_state.messages):
+    for msg in st.session_state.messages:
         if msg["role"] == "user":
             st.markdown(
                 f"""
-                <div class="bubble-user-row">
-                    <div class="bubble-user-card">{msg["content"]}</div>
+                <div class="user-msg-row">
+                    <div class="user-msg-bubble">{msg["content"]}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -881,13 +927,13 @@ with tab_chat:
             if not is_found or answer.strip().lower() in {"not found", "not found."}:
                 st.markdown(
                     """
-                    <div class="bubble-assistant-row">
-                        <div class="bubble-assistant-card">
-                            <div class="not-found-panel">
-                                <div class="not-found-status-title">
+                    <div class="assistant-msg-row">
+                        <div class="assistant-msg-bubble">
+                            <div class="not-found-container">
+                                <div class="not-found-heading">
                                     <span>📄</span> Not found
                                 </div>
-                                <div class="not-found-explanation">
+                                <div class="not-found-body">
                                     The catalogue does not provide sufficient evidence to answer this question.
                                 </div>
                             </div>
@@ -900,16 +946,16 @@ with tab_chat:
                 pages_str = ", ".join(str(p) for p in pages) if pages else "1"
                 st.markdown(
                     f"""
-                    <div class="bubble-assistant-row">
-                        <div class="bubble-assistant-card">
-                            <div class="assistant-answer-text">{answer}</div>
-                            <div class="citation-box-card">
-                                <div class="citation-header-line">
-                                    <span class="citation-badge-source">Source</span>
-                                    <span class="citation-meta-file">History_2024-25.pdf</span>
-                                    <span class="citation-page-pill">PDF Page {pages_str}</span>
+                    <div class="assistant-msg-row">
+                        <div class="assistant-msg-bubble">
+                            <div class="assistant-answer-content">{answer}</div>
+                            <div class="citation-panel">
+                                <div class="citation-header-flex">
+                                    <span class="citation-source-label">Source</span>
+                                    <span class="citation-file-title">History_2024-25.pdf</span>
+                                    <span class="citation-page-badge">PDF Page {pages_str}</span>
                                 </div>
-                                <div class="citation-quote-preview">"{evidence}"</div>
+                                <div class="citation-quote-italic">"{evidence}"</div>
                             </div>
                         </div>
                     </div>
@@ -918,45 +964,42 @@ with tab_chat:
                 )
 
                 if evidence:
-                    with st.expander(f"🔎 Full Verified Evidence Details (Page {pages_str})", expanded=False):
-                        st.markdown(f"**Exact Quotation from Retrieved Context:**\n> {evidence}")
-                        st.caption(f"Verified against local vector chunks on PDF Page {pages_str}")
+                    with st.expander(f"🔎 Supporting Quotation Details (Page {pages_str})", expanded=False):
+                        st.markdown(f"**Verbatim Extract from Document:**\n> {evidence}")
+                        st.caption(f"Cited from {Config.DEFAULT_PDF_PATH.name}, Page {pages_str}")
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # 3. Question Entry Form (Always positioned cleanly at the bottom)
-    with st.form("main_qa_form", clear_on_submit=True):
-        f_col1, f_col2 = st.columns([5, 1])
-        with f_col1:
-            typed_query = st.text_input(
-                "Ask a question about the catalogue...",
+    # 3. Question Input Form (Send button with paper plane icon)
+    with st.form("chat_input_form", clear_on_submit=True):
+        col_text, col_submit = st.columns([5, 1])
+        with col_text:
+            typed_input = st.text_input(
+                "Ask a question about the catalogue…",
                 placeholder="Ask a question about the catalogue…",
                 label_visibility="collapsed",
-                key="input_question_box",
+                key="chat_text_box",
             )
-        with f_col2:
-            send_btn = st.form_submit_button("Send ➔", use_container_width=True)
+        with col_submit:
+            form_sent = st.form_submit_button("Send ➔", use_container_width=True)
 
-    # Execute pending query
-    query_to_process = st.session_state.selected_query_to_run or (typed_query if send_btn else None)
-    if query_to_process:
-        st.session_state.selected_query_to_run = None
-        clean_q = query_to_process.strip()
-        if clean_q:
-            # 1. Add user query to chat history
-            st.session_state.messages.append({"role": "user", "content": clean_q})
+    # Process query
+    chosen_query = st.session_state.active_question_to_run or (typed_input if form_sent else None)
+    if chosen_query:
+        st.session_state.active_question_to_run = None
+        clean_text = chosen_query.strip()
+        if clean_text:
+            # Append user message
+            st.session_state.messages.append({"role": "user", "content": clean_text})
 
-            # 2. Invoke grounded RAG chain
-            with st.spinner("Retrieving document chunks and verifying citations..."):
-                response = rag_chain.query(clean_q)
+            # Query RAG Chain
+            with st.spinner("Retrieving document chunks and grounding answer..."):
+                response = rag_chain.query(clean_text)
 
-            # 3. Auto-sync Document Reader to cited page
+            # Auto-sync document viewer to cited page
             if response["is_found"] and response.get("pages"):
-                first_page = response["pages"][0]
-                st.session_state.current_page = first_page
+                st.session_state.current_page = response["pages"][0]
                 st.session_state.highlight_text = response.get("evidence", "")
 
-            # 4. Add assistant response to history
+            # Append assistant response
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": response["answer"],
@@ -968,34 +1011,34 @@ with tab_chat:
 # =============================================================================
 # TAB 2: CATALOGUE DOCUMENT READER (Full academic page viewer)
 # =============================================================================
-with tab_reader:
-    r_col_nav, r_col_stat = st.columns([3, 1])
-    with r_col_nav:
-        n_col1, n_col2, n_col3 = st.columns([1, 2, 1])
-        with n_col1:
-            if st.button("◀ Previous Page", key="btn_prev_pg", use_container_width=True):
+with tab_catalogue:
+    nav_col, stat_col = st.columns([3, 1])
+    with nav_col:
+        p_prev, p_select, p_next = st.columns([1, 2, 1])
+        with p_prev:
+            if st.button("◀ Previous Page", key="btn_reader_prev", use_container_width=True):
                 if st.session_state.current_page > 1:
                     st.session_state.current_page -= 1
                     st.rerun()
-        with n_col2:
-            page_val = st.number_input(
-                "Jump to Page",
+        with p_select:
+            selected_pg = st.number_input(
+                "Page",
                 min_value=1,
                 max_value=total_doc_pages,
                 value=st.session_state.current_page,
                 label_visibility="collapsed",
-                key="page_number_input",
+                key="reader_page_selector",
             )
-            if page_val != st.session_state.current_page:
-                st.session_state.current_page = page_val
+            if selected_pg != st.session_state.current_page:
+                st.session_state.current_page = selected_pg
                 st.rerun()
-        with n_col3:
-            if st.button("Next Page ▶", key="btn_next_pg", use_container_width=True):
+        with p_next:
+            if st.button("Next Page ▶", key="btn_reader_next", use_container_width=True):
                 if st.session_state.current_page < total_doc_pages:
                     st.session_state.current_page += 1
                     st.rerun()
 
-    with r_col_stat:
+    with stat_col:
         st.markdown(
             f"""
             <div style="text-align: right; font-size: 0.88rem; font-weight: 600; color: #707783; padding-top: 0.4rem;">
@@ -1005,40 +1048,40 @@ with tab_reader:
             unsafe_allow_html=True,
         )
 
-    # Read text from current page
-    p_text = pdf_loader.get_page_text(st.session_state.current_page)
-    if not p_text:
-        p_text = f"Orient BlackSwan History Catalogue 2024–25\n\nPage {st.session_state.current_page}\n\nScholarly monographs and university history textbooks."
+    # Read page text
+    raw_page_text = pdf_loader.get_page_text(st.session_state.current_page)
+    if not raw_page_text:
+        raw_page_text = f"Orient BlackSwan History Catalogue 2024–25\n\nPage {st.session_state.current_page}\n\nScholarly monographs and university history textbooks."
 
     # Highlight quoted evidence if present
-    hl_text = st.session_state.get("highlight_text", "").strip()
-    hl_clean = re.sub(r'["\']', '', hl_text)
+    highlight_str = st.session_state.get("highlight_text", "").strip()
+    clean_hl = re.sub(r'["\']', '', highlight_str)
 
-    if hl_clean and len(hl_clean) > 8 and hl_clean.lower() in p_text.lower():
-        start_pos = p_text.lower().find(hl_clean.lower())
-        end_pos = start_pos + len(hl_clean)
-        before = p_text[:start_pos].replace('\n', '<br>')
-        match = p_text[start_pos:end_pos]
-        after = p_text[end_pos:].replace('\n', '<br>')
-        rendered_page_content = (
-            f"{before}<div class='book-evidence-highlight'>{match} "
-            f"<span style='font-size:0.75rem; font-weight:700; color:#8D2947; margin-left:6px;'>[Cited Source]</span></div>{after}"
+    if clean_hl and len(clean_hl) > 8 and clean_hl.lower() in raw_page_text.lower():
+        start_idx = raw_page_text.lower().find(clean_hl.lower())
+        end_idx = start_idx + len(clean_hl)
+        before_txt = raw_page_text[:start_idx].replace('\n', '<br>')
+        matched_txt = raw_page_text[start_idx:end_idx]
+        after_txt = raw_page_text[end_idx:].replace('\n', '<br>')
+        rendered_body = (
+            f"{before_txt}<div class='reader-highlight-callout'>{matched_txt} "
+            f"<span style='font-size:0.75rem; font-weight:700; color:#8D2947; margin-left:6px;'>[Cited Source]</span></div>{after_txt}"
         )
     else:
-        rendered_page_content = p_text.replace("\n", "<br>")
+        rendered_body = raw_page_text.replace("\n", "<br>")
 
     # Render Book Paper Surface
     st.markdown(
         f"""
-        <div class="book-paper-sheet">
-            <div class="book-paper-header">
+        <div class="reader-paper-box">
+            <div class="reader-header-line">
                 <span>ORIENT BLACKSWAN HISTORY CATALOGUE 2024–25</span>
                 <span>PAGE {st.session_state.current_page} / {total_doc_pages}</span>
             </div>
             <div>
-                {rendered_page_content}
+                {rendered_body}
             </div>
-            <div class="book-paper-footer">
+            <div style="border-top: 1px solid #E3DED5; padding-top: 1rem; margin-top: 2rem; text-align: center; font-family: 'Cinzel', serif; font-size: 0.88rem; color: #707783;">
                 — {st.session_state.current_page} —
             </div>
         </div>
